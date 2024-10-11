@@ -1,94 +1,84 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./Homepage.css";
+import Settings from "../components/Settings.js";
+import {
+  ToneRunnerIcon,
+  AudioQuizIcon,
+  FreeModeIcon,
+  SettingsIcon,
+  MelodyIcon,
+} from "../assets/icons";
 
 const Homepage = () => {
   const navigate = useNavigate();
+  const [showVolumeControl, setShowVolumeControl] = useState(false);
 
-  const goToPiano = () => {
-    navigate("/piano");
+  const goToToneRunner = () => {
+    navigate("/tonerunner");
+  };
+
+  const toggleVolumeControl = () => {
+    setShowVolumeControl(!showVolumeControl);
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.sidebar}>
-        <div style={styles.tile} onClick={goToPiano}>
-          <span style={styles.tileText}>Game Mode 1</span>
+    <div id="homepage">
+      <div id="container">
+        <div id="sidebar">
+          <div className="tile">
+            <div>
+              <AudioQuizIcon className="icon" />
+              <span className="tileText">Audio Quiz</span>
+            </div>
+          </div>
+          <div className="blackTile"></div>
+          <div className="tile">
+            <div>
+              <MelodyIcon className="icon" />
+              <span className="tileText">Melody Mimic</span>
+            </div>
+          </div>
+          <div className="tile" onClick={goToToneRunner}>
+            <div>
+              <ToneRunnerIcon className="icon" />
+              <span className="tileText">Tone Runner</span>
+            </div>
+          </div>
+          <div className="blackTile"></div>
+          <div className="tile">
+            <div>
+              <FreeModeIcon className="icon" id="freeModeIcon" />
+              <span className="tileText">Free Mode</span>
+            </div>
+          </div>
+          <div className="blackTile"></div>
+          <div className="tile" onClick={toggleVolumeControl}>
+            <div>
+              <SettingsIcon className="icon" id="freeModeIcon" />
+              <span className="tileText">Settings</span>
+            </div>
+          </div>
         </div>
-        <div style={styles.blacktile}></div>
-        <div style={styles.tile}>
-          <span style={styles.tileText}>Game Mode 2</span>
+        <div id="mainContent">
+          <h1 id="gameName">Game Name</h1>
+          <p id="gameSlogan">Choose your game mode, learn and have fun!</p>
         </div>
-        <div style={styles.tile}>
-          <span style={styles.tileText}>Game Mode 3</span>
-        </div>
-        <div style={styles.blacktile}></div>
-        <div style={styles.tile}>
-          <span style={styles.tileText}>Free Mode</span>
-        </div>
-        <div style={styles.blacktile}></div>
-        <div style={styles.tile}>
-          <span style={styles.tileText}>Settings</span>
-        </div>
-      </div>
-      <div style={styles.mainContent}>
-        <h1>Game Name</h1>
-        <p>Choose your game mode, learn and have fun!</p>
+        {showVolumeControl && (
+          <>
+            <div id="overlay" onClick={toggleVolumeControl}></div>{" "}
+            <div className="floatingWindow">
+              <label>Master volume:</label>
+              <Settings />
+              <button className="closeButton" onClick={toggleVolumeControl}>
+                Close
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 };
 
-const styles = {
-  container: {
-    display: "flex",
-    height: "100vh",
-  },
-  sidebar: {
-    width: "55%",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    padding: "20px",
-  },
-  tile: {
-    width: "100%",
-    height: "20%",
-    textAlign: "left",
-    fontSize: "30px",
-    fontWeight: "800",
-    cursor: "pointer",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-  },
-  tileText: {
-    marginLeft: "20px",
-  },
-  tileHover: {
-    backgroundColor: "#ddd",
-  },
-  mainContent: {
-    width: "75%",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  blacktile: {
-    width: "25%",
-    height: "1%",
-    backgroundColor: "black",
-    alignSelf: "flex-end",
-    margin: "-44px -2px -44px",
-    borderRadius: "6px",
-    padding: "40px",
-    zIndex: 1,
-  },
-};
-
 export default Homepage;
-
