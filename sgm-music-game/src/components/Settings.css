@@ -1,15 +1,15 @@
-.volume-controller {
+.volumeController {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.volume-bar-container {
+.volumeBarContainer {
   display: flex;
   margin: 10px 0;
 }
 
-.volume-bar {
+.volumeBar {
   width: 20px;
   height: 30px; 
   background-color: white;
@@ -17,7 +17,7 @@
   transition: background-color 0.3s;
 }
 
-.volume-bar.filled {
+.volumeBar.filled {
   background-color: black;
 }
 

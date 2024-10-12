@@ -26,34 +26,35 @@ const Homepage = () => {
     <div id="homepage">
       <div id="container">
         <div id="sidebar">
-          <div className="tile">
+          <div className="tile" id="tile-1">
             <div>
               <AudioQuizIcon className="icon" />
               <span className="tileText">Audio Quiz</span>
             </div>
           </div>
-          <div className="blackTile"></div>
-          <div className="tile">
+          <div className="blackTile blackTile-1"></div>
+          <div className="tile" id="tile-2">
             <div>
               <MelodyIcon className="icon" />
               <span className="tileText">Melody Mimic</span>
             </div>
           </div>
-          <div className="tile" onClick={goToToneRunner}>
+          <div className="blackTile blackTile-2"></div>
+          <div className="tile" id="tile-3" onClick={goToToneRunner}>
             <div>
               <ToneRunnerIcon className="icon" />
               <span className="tileText">Tone Runner</span>
             </div>
           </div>
-          <div className="blackTile"></div>
-          <div className="tile">
+          <div className="blackTile blackTile-3"></div>
+          <div className="tile" id="tile-4">
             <div>
               <FreeModeIcon className="icon" id="freeModeIcon" />
               <span className="tileText">Free Mode</span>
             </div>
           </div>
-          <div className="blackTile"></div>
-          <div className="tile" onClick={toggleVolumeControl}>
+          <div className="blackTile blackTile-4"></div>
+          <div className="tile" id="tile-5" onClick={toggleVolumeControl}>
             <div>
               <SettingsIcon className="icon" id="freeModeIcon" />
               <span className="tileText">Settings</span>
@@ -77,6 +78,10 @@ const Homepage = () => {
           </>
         )}
       </div>
+      {/* <span>Test your ears in this quiz and try to identify the correct tone!"</span>
+      <span>Listen to a melody and try to play it back by ear!"</span>
+      <span>Run and jump to the beat of the music!"</span>
+      <span>Unleash your creativity and play and explore the sounds of different instruments!"</span> */}
     </div>
   );
 };

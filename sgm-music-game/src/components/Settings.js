@@ -29,11 +29,11 @@ const Settings = ({ onVolumeChange }) => {
   });
 
   return (
-    <div className="volume-controller">
+    <div className="volumeController">
       <label htmlFor="volume">{volume}%</label>
-      <div className="volume-bar-container">
+      <div className="volumeBarContainer">
         {volumeBars.map((filled, index) => (
-          <div key={index} className={`volume-bar ${filled ? "filled" : ""}`} />
+          <div key={index} className={`volumeBar ${filled ? "filled" : ""}`} />
         ))}
       </div>
       <div>
