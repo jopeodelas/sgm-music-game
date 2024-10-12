@@ -48,12 +48,12 @@ const Piano = () => {
 
     const notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
     const whiteKeys = [];
-    const noteHeights = { C4: 0, D4: 0.5, E4: 1, F4: 1.5, G4: 2, A4: 2.5, B4: 3, C5: 3.5 };
+    const noteHeights = { C4: -1.2, D4: -0.9, E4: -0.6, F4: -0.3, G4: 0.0, A4: 0.3, B4: 0.6, C5: 0.9 };
 
     for (let i = 0; i < whiteKeyCount; i++) {
       const whiteKey = new THREE.Mesh(
         new THREE.BoxGeometry(keyWidth, keyHeight, keyDepth),
-        whiteKeyMaterial
+        whiteKeyMaterial.clone()  // Use clone to make a unique material
       );
       whiteKey.position.x = i * (keyWidth + 0.1) - ((whiteKeyCount - 1) * (keyWidth + 0.1)) / 2;
       whiteKey.position.y = -2;
@@ -70,22 +70,22 @@ const Piano = () => {
     blackKeyOffsets.forEach((offset, index) => {
       const blackKey = new THREE.Mesh(
         new THREE.BoxGeometry(keyWidth / 2, keyHeight, keyDepth / 2),
-        blackKeyMaterial
+        blackKeyMaterial.clone()  // Use clone to make a unique material
       );
       blackKey.position.x = offset * (keyWidth + 0.1) - ((whiteKeyCount - 1) * (keyWidth + 0.1)) / 2;
       blackKey.position.y = -1.9;
       blackKey.position.z = 2;
-      blackKey.userData = { note: blackNotes[index], height: (index + 1) * 0.5 };
+      blackKey.userData = { note: blackNotes[index], height: (index + 1) * 0.2, color: 0x000000 };
       blackKeys.push(blackKey);
       scene.add(blackKey);
     });
 
     // Create the 3D Ball
-    const ballGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+    const ballGeometry = new THREE.SphereGeometry(0.15, 32, 32); // Adjusted ball size
     const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const ball = new THREE.Mesh(ballGeometry, ballMaterial);
     const ballStartZ = -3;
-    ball.position.set(0, -2.5, ballStartZ);
+    ball.position.set(0, -2.5, -1.5); // Adjusted ball position to be a bit further back
     scene.add(ball);
 
     let targetY = ball.position.y;
@@ -110,7 +110,7 @@ const Piano = () => {
       const pathway = new THREE.LineSegments(pathwayGeometry, pathwayMaterial);
       scene.add(pathway);
 
-      const edgeMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+      const edgeMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
       const edgeGeometry = new THREE.BufferGeometry().setFromPoints(edgePoints);
       const edges = new THREE.Line(edgeGeometry, edgeMaterial);
       scene.add(edges);
@@ -122,22 +122,26 @@ const Piano = () => {
     const walls = [];
 
     const createWall = (note, height) => {
-      const wallGeometry = new THREE.BoxGeometry(3, 3, 0.1);
-      const wallMaterial = new THREE.MeshBasicMaterial({ color: noteColors[note] });
+      // Define the wall shape with a hole
+      const wallShape = new THREE.Shape();
+      wallShape.moveTo(-1.5, -1.5);
+      wallShape.lineTo(1.5, -1.5);
+      wallShape.lineTo(1.5, 1.5);
+      wallShape.lineTo(-1.5, 1.5);
+      wallShape.lineTo(-1.5, -1.5);
+      
+      // Create the hole in the wall
+      const holePath = new THREE.Path();
+      holePath.arc(0, height + 0.15, 0.18, 0, Math.PI * 2, true); // Adjusted hole height to match the ball's target height
+      wallShape.holes.push(holePath);
+      
+      // Create geometry from shape
+      const wallGeometry = new THREE.ShapeGeometry(wallShape);
+      const wallMaterial = new THREE.MeshBasicMaterial({ color: noteColors[note], side: THREE.DoubleSide });
       const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-
-      const holeRadius = 0.5;
-      const holeGeometry = new THREE.CircleGeometry(holeRadius, 32);
-      const holeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-      const hole = new THREE.Mesh(holeGeometry, holeMaterial);
-      hole.position.y = height - 1.5;
-      hole.position.z = 0.05;
-      hole.rotation.y = Math.PI / 2;
-
       wall.position.set(0, 0, -10);
       wall.userData = { note, holeHeight: height };
       scene.add(wall);
-      wall.add(hole);
       walls.push(wall);
     };
 
@@ -158,18 +162,23 @@ const Piano = () => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
-
+    
       const intersects = raycaster.intersectObjects([...whiteKeys, ...blackKeys]);
       if (intersects.length > 0) {
         const key = intersects[0].object;
         playNoteAndMoveBall(key.userData.note, key.userData.height);
         setKeyColor(key, key.userData.color);
-
+    
         setTimeout(() => {
-          setKeyColor(key, 0xffffff);
-        }, 200);
+          if (whiteKeys.includes(key)) {
+            setKeyColor(key, 0xffffff); // Reset white key color
+          } else if (blackKeys.includes(key)) {
+            setKeyColor(key, 0x000000); // Reset black key color
+          }
+        }, 200); // Change color back after 200ms
       }
     };
+    
 
     const setKeyColor = (key, color) => {
       key.material.color.setHex(color);
@@ -177,7 +186,7 @@ const Piano = () => {
 
     const playNoteAndMoveBall = (note, height) => {
       synth.triggerAttackRelease(note, '8n');
-      targetY = height;
+      targetY = height + 0.15; // Ball moves to the exact height of the pressed key with adjustment to align with the hole
     };
 
     window.addEventListener('click', onMouseClick);
@@ -188,7 +197,7 @@ const Piano = () => {
       const holeHeight = wall.userData.holeHeight;
 
       if (wallPosition <= -0.8 && wallPosition >= -1.2) {
-        if (Math.abs(ballPositionY - holeHeight) < 0.5) {
+        if (Math.abs(ballPositionY - holeHeight) < 0.18) { // Adjusted collision tolerance to match the hole size
           return false;
         } else {
           return true;
