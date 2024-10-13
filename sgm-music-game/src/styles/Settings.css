@@ -1,0 +1,183 @@
+@font-face {
+  font-family: "Poppins-SemiBold";
+  src: url("../assets/fonts/Poppins-SemiBold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.volumeController {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.volumeBarContainer {
+  display: flex;
+  margin: 10px 0;
+  justify-content: center;
+  width: 100%;
+}
+
+.volumeBar {
+  width: 9%;
+  height: 30px;
+  margin: 0 2px;
+  transition: background-color 0.3s;
+  border-radius: 2px;
+}
+
+#floatingWindow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 33%;
+  padding: 20px;
+  background-color: white;
+  border: 4px solid #aaa;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.floatingWindow.dark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 33%;
+  padding: 20px;
+  background-color: black;
+  border: 4px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+  z-index: 1000;
+}
+
+.star-container.dark {
+  background-color: black;
+}
+
+.star-container.dark .star {
+  background-color: white;
+}
+
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.iconSettings {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  fill: black;
+}
+
+#addIcon {
+  margin-left: 6px;
+  margin-top: -3px;
+}
+
+#subtractIcon {
+  margin-right: 6px;
+  margin-top: -3px;
+}
+
+#volumeLabel {
+  font-family: "Poppins-SemiBold";
+  font-size: 20px;
+}
+
+.closeIconContainer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -44px;
+}
+
+#darkModeLabel {
+  font-family: "Poppins-SemiBold";
+  font-size: 20px;
+  margin-left: 6px;
+}
+
+.darkMode {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+}
+
+#settingsTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#settingsLabel {
+  font-family: "Poppins-SemiBold";
+  font-size: 32px;
+  font-weight: bold;
+  margin-left: 12px;
+  margin-right: 24px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 25px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.switch input {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 25px;
+  z-index: 1;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+input:checked + .slider {
+  background-color: #aaa;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}

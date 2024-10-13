@@ -1,0 +1,32 @@
+.star-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background-color: white;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: black;
+  border-radius: 50%;
+  opacity: 0;
+  animation: fadeStars 4s infinite ease-in-out;
+}
+
+@keyframes fadeStars {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

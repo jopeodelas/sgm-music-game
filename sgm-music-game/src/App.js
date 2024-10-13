@@ -1,14 +1,17 @@
-// src/App.js
-import React from 'react';
-import Piano from './views/Piano'; // Import the Piano component
-import './App.css'; // You can keep this or remove if not needed
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Homepage from "./views/Homepage.js";
+import ToneRunner from "./views/ToneRunner.js";
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <Piano /> {/* This will render the 3D piano game */}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/tonerunner" element={<ToneRunner />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
