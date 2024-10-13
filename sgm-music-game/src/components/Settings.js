@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Settings.css";
+import { CloseIcon } from "../assets/icons/index.js";
+import { AddIcon } from "../assets/icons/index.js";
+import { SubtractIcon } from "../assets/icons/index.js";
+import { SettingsIcon } from "../assets/icons/index.js";
 
-const Settings = ({ onVolumeChange }) => {
+const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
   const [volume, setVolume] = useState(50);
-  const [darkMode, setDarkMode] = useState(false);
 
   const increaseVolume = () => {
     setVolume((prevVolume) => {
@@ -29,20 +32,17 @@ const Settings = ({ onVolumeChange }) => {
     return index < Math.ceil(volume / 10);
   });
 
-  const handleDarkModeToggle = () => {
-    setDarkMode((prevDarkMode) => !prevDarkMode);
-  };
   const volumeBarStyle = darkMode
     ? {
         backgroundColor: "black",
         borderStyle: "solid",
-        borderWidth: "2px",
+        borderWidth: "3px",
         borderColor: "white",
       }
     : {
         backgroundColor: "white",
         borderStyle: "solid",
-        borderWidth: "2px",
+        borderWidth: "3px",
         borderColor: "black",
       };
 
@@ -50,13 +50,13 @@ const Settings = ({ onVolumeChange }) => {
     ? {
         backgroundColor: "white",
         borderStyle: "solid",
-        borderWidth: "2px",
+        borderWidth: "3px",
         borderColor: "black",
       }
     : {
         backgroundColor: "black",
         borderStyle: "solid",
-        borderWidth: "2px",
+        borderWidth: "3px",
         borderColor: "white",
       };
 
@@ -74,40 +74,100 @@ const Settings = ({ onVolumeChange }) => {
       floatingWindow.style.backgroundColor = darkMode ? "black" : "white";
       floatingWindow.style.color = darkMode ? "white" : "black";
     }
+
+    const closeButton = document.getElementById("closeIcon");
+    if (closeButton) {
+      closeButton.style.stroke = darkMode ? "white" : "black";
+    }
+
+    const addButton = document.getElementById("addIcon");
+    if (addButton) {
+      addButton.style.stroke = darkMode ? "white" : "black";
+    }
+
+    const subtractButton = document.getElementById("subtractIcon");
+    if (subtractButton) {
+      subtractButton.style.fill = darkMode ? "white" : "black";
+    }
+
+    const settingsIcon = document.getElementById("settingsIcon");
+    if (settingsIcon) {
+      settingsIcon.style.fill = darkMode ? "white" : "black";
+    }
   }, [darkMode]);
 
   return (
-    <div id="floatingWindow">
-      <div className="volumeController">
-        <label htmlFor="volume">{volume}%</label>
-        <div className="volumeBarContainer">
-          {volumeBars.map((filled, index) => (
-            <div
-              key={index}
-              className={`volumeBar ${filled ? "filled" : ""}`}
-              style={
-                filled
-                  ? { ...filledBarStyle, ...filledBarBorderStyle }
-                  : { ...volumeBarStyle, ...volumeBarBorderStyle }
-              }
+    <>
+      <div id="overlay" onClick={onClose}></div>
+      <div id="floatingWindow">
+        <div id="settingsTop">
+          <div>
+            <SettingsIcon className="icon" id="settingsIcon" />
+            <label id="settingsLabel">Settings</label>
+          </div>
+          <div className="closeIconContainer">
+            <CloseIcon
+              id="closeIcon"
+              className="iconSettings"
+              onClick={onClose}
             />
-          ))}
+          </div>
         </div>
-        <div>
-          <button onClick={decreaseVolume}>-</button>
-          <button onClick={increaseVolume}>+</button>
+        <div className="volumeController">
+          <label htmlFor="volume" id="volumeLabel">
+            Volume: {volume}%
+          </label>
+          <div className="volumeBarContainer">
+            <SubtractIcon
+              onClick={decreaseVolume}
+              id="subtractIcon"
+              className="iconSettings"
+            />
+            {volumeBars.map((filled, index) => (
+              <div
+                key={index}
+                className={`volumeBar ${filled ? "filled" : ""}`}
+                style={
+                  filled
+                    ? { ...filledBarStyle, ...filledBarBorderStyle }
+                    : { ...volumeBarStyle, ...volumeBarBorderStyle }
+                }
+              />
+            ))}
+            <AddIcon
+              onClick={increaseVolume}
+              id="addIcon"
+              className="iconSettings"
+            />
+          </div>
+        </div>
+        {/* <div className="darkMode">
+          <label htmlFor="darkMode" id="darkModeLabel">
+            Dark Mode
+          </label>
+          <input
+            type="checkbox"
+            id="darkMode"
+            checked={darkMode}
+            onChange={onDarkModeToggle}
+          />
+        </div> */}
+        <div className="darkMode">
+          <label htmlFor="darkMode" id="darkModeLabel">
+            Dark Mode
+          </label>
+          <div className="switch">
+            <input
+              type="checkbox"
+              id="darkMode"
+              checked={darkMode}
+              onChange={onDarkModeToggle}
+            />
+            <span className="slider"></span>
+          </div>
         </div>
       </div>
-      <div className="darkMode">
-        <label htmlFor="darkMode">Dark Mode</label>
-        <input
-          type="checkbox"
-          id="darkMode"
-          checked={darkMode}
-          onChange={handleDarkModeToggle}
-        />
-      </div>
-    </div>
+    </>
   );
 };
 

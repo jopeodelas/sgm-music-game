@@ -120,7 +120,7 @@
 #gameSlogan {
   font-size: 30px;
   font-weight: 400;
-  margin-bottom: 500px;
+  margin-bottom: 300px;
   font-style: italic;
 }
 
@@ -139,8 +139,8 @@
 }
 
 .icon {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   margin-left: 24px;
-  margin-bottom: -4px;
+  margin-bottom: -6px;
 }

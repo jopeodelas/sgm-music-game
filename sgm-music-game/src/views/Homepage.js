@@ -14,6 +14,7 @@ import Background from "../components/Background.js";
 const Homepage = () => {
   const navigate = useNavigate();
   const [showVolumeControl, setShowVolumeControl] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   const goToToneRunner = () => {
     navigate("/tonerunner");
@@ -23,9 +24,13 @@ const Homepage = () => {
     setShowVolumeControl(!showVolumeControl);
   };
 
+  const handleDarkModeToggle = () => {
+    setDarkMode((prevDarkMode) => !prevDarkMode);
+  };
+
   return (
     <div id="homepage">
-      <Background />
+      <Background darkMode={darkMode} />
       <div id="container">
         <div id="sidebar">
           <div className="tile" id="tile-1">
@@ -42,7 +47,6 @@ const Homepage = () => {
             </div>
           </div>
           <div className="blackTile blackTile-2"></div>
-
           <div className="tile" id="tile-3" onClick={goToToneRunner}>
             <div>
               <ToneRunnerIcon className="icon" />
@@ -52,26 +56,33 @@ const Homepage = () => {
           <div className="blackTile blackTile-3"></div>
           <div className="tile" id="tile-4">
             <div>
-              <FreeModeIcon className="icon" id="freeModeIcon" />
+              <FreeModeIcon className="icon" />
               <span className="tileText">Free Mode</span>
             </div>
           </div>
           <div className="blackTile blackTile-4"></div>
           <div className="tile" id="tile-5" onClick={toggleVolumeControl}>
             <div>
-              <SettingsIcon className="icon" id="freeModeIcon" />
+              <SettingsIcon className="icon" />
               <span className="tileText">Settings</span>
             </div>
           </div>
         </div>
-        <div id="mainContent">
+        <div
+          id="mainContent"
+          style={{
+            color: darkMode ? "white" : "black",
+          }}
+        >
           <h1 id="gameName">Game Name</h1>
           <p id="gameSlogan">Choose your game mode, learn and have fun!</p>
         </div>
         {showVolumeControl && (
-          <>
-            <div id="overlay" onClick={toggleVolumeControl}></div> <Settings />
-          </>
+          <Settings
+            onClose={toggleVolumeControl}
+            darkMode={darkMode}
+            onDarkModeToggle={handleDarkModeToggle}
+          />
         )}
       </div>
     </div>
