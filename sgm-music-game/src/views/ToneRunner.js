@@ -10,7 +10,6 @@ const Piano = () => {
   const ballSpeed = 0.05;
 
   useEffect(() => {
-    // Initialize scene, camera, and renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -23,7 +22,9 @@ const Piano = () => {
     const renderer = new THREE.WebGLRenderer();
     renderer.setClearColor(0xffffff);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    mountRef.current.appendChild(renderer.domElement);
+    // mountRef.current.appendChild(renderer.domElement);
+    const mountNode = mountRef.current; // Store the ref in a local variable
+    mountNode.appendChild(renderer.domElement);
 
     // Add lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -110,7 +111,7 @@ const Piano = () => {
     const ballGeometry = new THREE.SphereGeometry(0.25, 32, 32);
     const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const ball = new THREE.Mesh(ballGeometry, ballMaterial);
-    const ballStartZ = -3;
+    // const ballStartZ = -3;
     ball.position.set(0, -2.3, -1.8);
     scene.add(ball);
 
@@ -190,7 +191,6 @@ const Piano = () => {
 
     const wallInterval = setInterval(generateWalls, 5000);
 
-    // Raycasting for mouse interaction
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -338,9 +338,10 @@ const Piano = () => {
     return () => {
       window.removeEventListener("click", onMouseClick);
       clearInterval(wallInterval);
-      mountRef.current.removeChild(renderer.domElement);
+      // mountRef.current.removeChild(renderer.domElement);
+      mountNode.removeChild(renderer.domElement); // Use local variable for cleanup
     };
-  }, [gameOver]);
+  }, [gameOver, wallSpeed]);
 
   return <div ref={mountRef} />;
 };

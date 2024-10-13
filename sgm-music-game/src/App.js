@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Homepage from "./views/Homepage.js";
-import Piano from "./views/Piano.js";
+import Piano from "./views/ToneRunner.js";
 
 const App = () => {
   return (
