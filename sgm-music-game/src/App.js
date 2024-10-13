@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import Piano from './Scene/Piano'; // Import the Piano component
+import Piano from './views/Piano'; // Import the Piano component
 import './App.css'; // You can keep this or remove if not needed
 
 function App() {
