@@ -9,15 +9,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .volumeBarContainer {
   display: flex;
   margin: 10px 0;
+  justify-content: center;
+  width: 100%;
 }
 
 .volumeBar {
-  width: 25px;
+  width: 9%;
   height: 30px;
   margin: 0 2px;
   transition: background-color 0.3s;
@@ -101,6 +104,7 @@
 #darkModeLabel {
   font-family: "Poppins-SemiBold";
   font-size: 20px;
+  margin-left: 6px;
 }
 
 .darkMode {
@@ -124,7 +128,6 @@
   margin-right: 24px;
 }
 
-/* Switch container */
 .switch {
   position: relative;
   display: inline-block;
@@ -134,19 +137,17 @@
   cursor: pointer;
 }
 
-/* Hide the default checkbox */
 .switch input {
-  opacity: 0; /* Esconde o checkbox */
-  width: 100%; /* Faz o input cobrir todo o switch */
-  height: 100%; /* Faz o input cobrir todo o switch */
-  position: absolute; /* Posiciona o input sobre o slider */
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
   top: 0;
   left: 0;
-  pointer-events: auto; /* Habilita eventos de clique no input */
-  z-index: 2; /* Garante que o input esteja acima de outros elementos */
+  pointer-events: auto;
+  z-index: 2;
 }
 
-/* The slider */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -160,7 +161,6 @@
   z-index: 1;
 }
 
-/* O círculo dentro do slider */
 .slider:before {
   position: absolute;
   content: "";

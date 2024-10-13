@@ -6,20 +6,17 @@ import { SubtractIcon } from "../assets/icons/index.js";
 import { SettingsIcon } from "../assets/icons/index.js";
 
 const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
-  // Retrieve the saved volume and darkMode from localStorage (or default to 50% volume and false for darkMode)
   const savedVolume = localStorage.getItem("volume");
   const initialVolume = savedVolume ? parseInt(savedVolume, 10) : 50;
-  
-  const savedDarkMode = localStorage.getItem("darkMode") === "true"; // Retrieve darkMode state from localStorage
+
+  const savedDarkMode = localStorage.getItem("darkMode") === "true";
   const [volume, setVolume] = useState(initialVolume);
   const [isDarkMode, setIsDarkMode] = useState(savedDarkMode);
 
-  // Save volume to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("volume", volume);
   }, [volume]);
 
-  // Save darkMode to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("darkMode", isDarkMode);
   }, [isDarkMode]);
@@ -114,7 +111,7 @@ const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
 
   const handleDarkModeToggle = () => {
     setIsDarkMode((prevDarkMode) => !prevDarkMode);
-    onDarkModeToggle(); // Assuming you still want to call the prop passed in `onDarkModeToggle`
+    onDarkModeToggle();
   };
 
   return (
@@ -171,7 +168,7 @@ const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
               type="checkbox"
               id="darkMode"
               checked={isDarkMode}
-              onChange={handleDarkModeToggle} // Call the new toggle function
+              onChange={handleDarkModeToggle}
             />
             <span className="slider"></span>
           </div>

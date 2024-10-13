@@ -15,6 +15,15 @@ const Homepage = () => {
   const navigate = useNavigate();
   const [showVolumeControl, setShowVolumeControl] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [isClickable, setIsClickable] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsClickable(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const storedDarkMode = localStorage.getItem("darkMode");
@@ -36,9 +45,12 @@ const Homepage = () => {
   };
 
   return (
-    <div id="homepage">
+    <div id="homepage" style={{ pointerEvents: isClickable ? "auto" : "none" }}>
       <Background darkMode={darkMode} />
-      <div id="container">
+      <div
+        id="container"
+        style={{ pointerEvents: isClickable ? "auto" : "none" }}
+      >
         <div id="sidebar">
           <div className="tile" id="tile-1">
             <div>

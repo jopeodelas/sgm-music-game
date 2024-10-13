@@ -9,7 +9,7 @@ const Background = ({ darkMode }) => {
       const container = document.querySelector("#star-container");
 
       if (container) {
-         container.innerHTML = "";
+        container.innerHTML = "";
 
         for (let i = 0; i < numStars; i++) {
           const star = document.createElement("div");
