@@ -6,7 +6,23 @@ import { SubtractIcon } from "../assets/icons/index.js";
 import { SettingsIcon } from "../assets/icons/index.js";
 
 const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
-  const [volume, setVolume] = useState(50);
+  // Retrieve the saved volume and darkMode from localStorage (or default to 50% volume and false for darkMode)
+  const savedVolume = localStorage.getItem("volume");
+  const initialVolume = savedVolume ? parseInt(savedVolume, 10) : 50;
+  
+  const savedDarkMode = localStorage.getItem("darkMode") === "true"; // Retrieve darkMode state from localStorage
+  const [volume, setVolume] = useState(initialVolume);
+  const [isDarkMode, setIsDarkMode] = useState(savedDarkMode);
+
+  // Save volume to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("volume", volume);
+  }, [volume]);
+
+  // Save darkMode to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("darkMode", isDarkMode);
+  }, [isDarkMode]);
 
   const increaseVolume = () => {
     setVolume((prevVolume) => {
@@ -32,7 +48,7 @@ const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
     return index < Math.ceil(volume / 10);
   });
 
-  const volumeBarStyle = darkMode
+  const volumeBarStyle = isDarkMode
     ? {
         backgroundColor: "black",
         borderStyle: "solid",
@@ -46,7 +62,7 @@ const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
         borderColor: "black",
       };
 
-  const filledBarStyle = darkMode
+  const filledBarStyle = isDarkMode
     ? {
         backgroundColor: "white",
         borderStyle: "solid",
@@ -60,41 +76,46 @@ const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
         borderColor: "white",
       };
 
-  const volumeBarBorderStyle = darkMode
+  const volumeBarBorderStyle = isDarkMode
     ? { borderColor: "white" }
     : { borderColor: "black" };
 
-  const filledBarBorderStyle = darkMode
+  const filledBarBorderStyle = isDarkMode
     ? { borderColor: "white" }
     : { borderColor: "black" };
 
   useEffect(() => {
     const floatingWindow = document.getElementById("floatingWindow");
     if (floatingWindow) {
-      floatingWindow.style.backgroundColor = darkMode ? "black" : "white";
-      floatingWindow.style.color = darkMode ? "white" : "black";
+      floatingWindow.style.backgroundColor = isDarkMode ? "black" : "white";
+      floatingWindow.style.color = isDarkMode ? "white" : "black";
     }
 
     const closeButton = document.getElementById("closeIcon");
     if (closeButton) {
-      closeButton.style.stroke = darkMode ? "white" : "black";
+      closeButton.style.stroke = isDarkMode ? "white" : "black";
     }
 
     const addButton = document.getElementById("addIcon");
     if (addButton) {
-      addButton.style.stroke = darkMode ? "white" : "black";
+      addButton.style.stroke = isDarkMode ? "white" : "black";
     }
 
     const subtractButton = document.getElementById("subtractIcon");
     if (subtractButton) {
-      subtractButton.style.fill = darkMode ? "white" : "black";
+      subtractButton.style.fill = isDarkMode ? "white" : "black";
     }
 
     const settingsIcon = document.getElementById("settingsIcon");
     if (settingsIcon) {
-      settingsIcon.style.fill = darkMode ? "white" : "black";
+      settingsIcon.style.fill = isDarkMode ? "white" : "black";
     }
-  }, [darkMode]);
+  }, [isDarkMode]);
+
+  const handleDarkModeToggle = () => {
+    setIsDarkMode((prevDarkMode) => !prevDarkMode);
+    onDarkModeToggle(); // Assuming you still want to call the prop passed in `onDarkModeToggle`
+  };
 
   return (
     <>
@@ -141,17 +162,6 @@ const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
             />
           </div>
         </div>
-        {/* <div className="darkMode">
-          <label htmlFor="darkMode" id="darkModeLabel">
-            Dark Mode
-          </label>
-          <input
-            type="checkbox"
-            id="darkMode"
-            checked={darkMode}
-            onChange={onDarkModeToggle}
-          />
-        </div> */}
         <div className="darkMode">
           <label htmlFor="darkMode" id="darkModeLabel">
             Dark Mode
@@ -160,8 +170,8 @@ const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
             <input
               type="checkbox"
               id="darkMode"
-              checked={darkMode}
-              onChange={onDarkModeToggle}
+              checked={isDarkMode}
+              onChange={handleDarkModeToggle} // Call the new toggle function
             />
             <span className="slider"></span>
           </div>

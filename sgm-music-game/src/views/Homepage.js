@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Homepage.css";
 import Settings from "../components/Settings.js";
@@ -15,6 +15,13 @@ const Homepage = () => {
   const navigate = useNavigate();
   const [showVolumeControl, setShowVolumeControl] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const storedDarkMode = localStorage.getItem("darkMode");
+    if (storedDarkMode) {
+      setDarkMode(JSON.parse(storedDarkMode));
+    }
+  }, []);
 
   const goToToneRunner = () => {
     navigate("/tonerunner");
