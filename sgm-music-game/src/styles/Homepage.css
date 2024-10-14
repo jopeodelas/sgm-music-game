@@ -195,3 +195,28 @@
   bottom: 0;
   right: 20px;
 }
+
+.tileDescription {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 18px;
+  font-family: "Poppins-Regular";
+  z-index: 2;
+  animation: fadeIn 0.2s ease-in-out;
+  text-align: start;
+  width: 100%; 
+  padding: 10px; 
+  margin-left: 80px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
