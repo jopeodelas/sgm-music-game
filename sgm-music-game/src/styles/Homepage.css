@@ -5,6 +5,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "Poppins-Regular";
+  src: url("../assets/fonts/Poppins-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 #container {
   display: flex;
   height: 100%;
@@ -54,15 +61,39 @@
 #tile-1 {
   animation-delay: 0.1s;
 }
+#tile-1:hover ~ #blackTile-1 {
+  width: 100%;
+}
+#blackTile-1:hover ~ #tile-1 {
+  background-color: #fff;
+  border: 2px solid rgb(0, 0, 0);
+}
+
 #tile-2 {
   animation-delay: 0.7s;
 }
+#tile-2:hover ~ #blackTile-2 {
+  width: 100%;
+}
+#blackTile-2:hover ~ #tile-2 {
+  background-color: #fff;
+  border: 2px solid rgb(0, 0, 0);
+}
+
 #tile-3 {
   animation-delay: 1.3s;
 }
+#tile-3:hover ~ #blackTile-3 {
+  width: 100%;
+}
+
 #tile-4 {
   animation-delay: 1.9s;
 }
+#tile-4:hover ~ #blackTile-4 {
+  width: 100%;
+}
+
 #tile-5 {
   animation-delay: 2.5s;
 }
@@ -95,19 +126,30 @@
   padding: 24px;
   z-index: 1;
   opacity: 0;
+  color: black;
   animation: slideIn 0.1s forwards;
+  transition: width 0.6s ease-in-out, transform 0.3s ease-in-out;
 }
 
-.blackTile-1 {
+.blackTile:hover {
+  width: 100%;
+  cursor: pointer;
+}
+
+.blackTile::after {
+  opacity: 0;
+}
+
+#blackTile-1 {
   animation-delay: 0.7s;
 }
-.blackTile-2 {
+#blackTile-2 {
   animation-delay: 1.3s;
 }
-.blackTile-3 {
+#blackTile-3 {
   animation-delay: 1.9s;
 }
-.blackTile-4 {
+#blackTile-4 {
   animation-delay: 2.5s;
 }
 
@@ -122,6 +164,7 @@
   font-weight: 400;
   margin-bottom: 300px;
   font-style: italic;
+  font-family: "Poppins-Regular";
 }
 
 #volume {
@@ -143,4 +186,12 @@
   height: 34px;
   margin-left: 24px;
   margin-bottom: -6px;
+}
+
+#developedBy {
+  font-size: 16px;
+  font-family: "Poppins-Regular";
+  position: absolute;
+  bottom: 0;
+  right: 20px;
 }
