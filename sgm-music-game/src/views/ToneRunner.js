@@ -2,12 +2,13 @@ import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import * as Tone from "tone";
 import TWEEN from "@tweenjs/tween.js";
+import Background from "../components/Background";
 
 const Piano = () => {
   const mountRef = useRef(null);
   const [gameOver, setGameOver] = useState(false);
   const [wallSpeed, setWallSpeed] = useState(0.02);
-  const ballSpeed = 0.05;
+  const ballSpeed = 0.1;
 
   useEffect(() => {
     const scene = new THREE.Scene();
@@ -19,11 +20,10 @@ const Piano = () => {
     );
     camera.position.set(0, 0, 6);
 
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor(0xffffff);
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    // mountRef.current.appendChild(renderer.domElement);
-    const mountNode = mountRef.current; // Store the ref in a local variable
+    renderer.setClearColor(0x000000, 0); // Transparente para deixar o background visível
+    const mountNode = mountRef.current;
     mountNode.appendChild(renderer.domElement);
 
     // Add lighting
@@ -82,6 +82,11 @@ const Piano = () => {
       };
       whiteKeys.push(whiteKey);
       scene.add(whiteKey);
+
+      // Add outline to white keys
+      const outline = new THREE.Mesh(whiteKey.geometry.clone(), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }));
+      outline.scale.set(1.05, 1.05, 1.02);
+      whiteKey.add(outline);
     }
 
     const blackKeyOffsets = [0.75, 1.75, 3.25, 4.25, 5.25];
@@ -101,7 +106,7 @@ const Piano = () => {
       blackKey.userData = {
         note: blackNotes[index],
         height: (index + 1) * 0.2,
-        color: 0xffffff,
+        color: 0x000000,
       };
       blackKeys.push(blackKey);
       scene.add(blackKey);
@@ -111,9 +116,14 @@ const Piano = () => {
     const ballGeometry = new THREE.SphereGeometry(0.25, 32, 32);
     const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const ball = new THREE.Mesh(ballGeometry, ballMaterial);
-    // const ballStartZ = -3;
     ball.position.set(0, -2.3, -1.8);
+    ball.frustumCulled = false; // Disable frustum culling to prevent disappearing
     scene.add(ball);
+
+    // Add outline to the ball
+    const ballOutline = new THREE.Mesh(ball.geometry.clone(), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }));
+    ballOutline.scale.set(1.15, 1.15, 1.15);
+    ball.add(ballOutline);
 
     let targetY = ball.position.y;
 
@@ -172,6 +182,7 @@ const Piano = () => {
       });
       const wall = new THREE.Mesh(wallGeometry, wallMaterial);
       wall.position.set(0, 0, -10);
+      wall.frustumCulled = false; // Disable frustum culling for walls
       wall.userData = {
         note,
         holeHeight: height,
@@ -183,10 +194,12 @@ const Piano = () => {
     };
 
     const generateWalls = () => {
-      const randomIndex = Math.floor(Math.random() * whiteKeys.length);
-      const randomNote = whiteKeys[randomIndex].userData.note;
-      const randomHeight = whiteKeys[randomIndex].userData.height;
-      createWall(randomNote, randomHeight);
+      if (walls.length < 5) {  // Limit the number of walls in the scene to improve performance
+        const randomIndex = Math.floor(Math.random() * whiteKeys.length);
+        const randomNote = whiteKeys[randomIndex].userData.note;
+        const randomHeight = whiteKeys[randomIndex].userData.height;
+        createWall(randomNote, randomHeight);
+      }
     };
 
     const wallInterval = setInterval(generateWalls, 5000);
@@ -211,20 +224,20 @@ const Piano = () => {
         setTimeout(() => {
           if (whiteKeys.includes(key)) {
             setKeyColor(key, 0xffffff);
-          } else if (blackKeys.includes(key)) {
-            setKeyColor(key, 0x000000);
-          }
+          } 
         }, 200);
       }
     };
 
     const setKeyColor = (key, color) => {
-      key.material.color.setHex(color);
+      if (!blackKeys.includes(key)) {
+        key.material.color.setHex(color);
+      }
     };
 
     const playNoteAndMoveBall = (note, height) => {
       synth.triggerAttackRelease(note, "8n");
-      targetY = height + 0.15;
+      targetY = THREE.MathUtils.clamp(height + 0.15, -1.5, 1.5);
     };
 
     window.addEventListener("click", onMouseClick);
@@ -246,13 +259,14 @@ const Piano = () => {
     };
 
     const animate = () => {
-      if (gameOver) return;
       requestAnimationFrame(animate);
 
-      ball.position.y += (targetY - ball.position.y) * ballSpeed;
+      // Smoothly interpolate the ball position towards the target
+      ball.position.y = THREE.MathUtils.lerp(ball.position.y, targetY, ballSpeed);
+      ball.position.y = THREE.MathUtils.clamp(ball.position.y, -2.5, 1.5);
 
-      walls.forEach((wall, index) => {
-        if (!wall.userData.removed) {
+      walls.forEach((wall) => {
+        if (wall && !wall.userData.removed) {
           wall.position.z += wallSpeed;
 
           if (checkCollision(wall)) {
@@ -260,90 +274,37 @@ const Piano = () => {
             clearInterval(wallInterval);
           }
 
-          if (
-            wall.userData.passed &&
-            wall.position.z > 0 &&
-            !wall.userData.removed
-          ) {
+          if (wall.userData.passed && !wall.userData.removed) {
             wall.userData.removed = true;
             scene.remove(wall);
-            walls.splice(index, 1);
             setWallSpeed((prevSpeed) => prevSpeed + 0.005);
           }
         }
       });
+
+      // Filter out removed walls
+      const filteredWalls = walls.filter((wall) => wall && !wall.userData.removed);
+      walls.length = 0;
+      walls.push(...filteredWalls);
 
       TWEEN.update();
       renderer.render(scene, camera);
     };
     animate();
 
-    const addFadingStars = () => {
-      const starMaterial = new THREE.PointsMaterial({
-        color: 0x000000,
-        size: 0.2,
-        transparent: true,
-        opacity: 0.8,
-      });
-      const starGeometry = new THREE.BufferGeometry();
-      const starCount = 2000;
-      const starVertices = [];
-
-      for (let i = 0; i < starCount; i++) {
-        starVertices.push(
-          THREE.MathUtils.randFloatSpread(200),
-          THREE.MathUtils.randFloatSpread(200),
-          THREE.MathUtils.randFloatSpread(200)
-        );
-      }
-
-      starGeometry.setAttribute(
-        "position",
-        new THREE.Float32BufferAttribute(starVertices, 3)
-      );
-      const stars = new THREE.Points(starGeometry, starMaterial);
-      scene.add(stars);
-    };
-
-    addFadingStars();
-
-    // Adding outline to all objects
-    const outlineMaterial = new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      side: THREE.BackSide,
-    });
-
-    whiteKeys.forEach((key) => {
-      const outline = new THREE.Mesh(key.geometry.clone(), outlineMaterial);
-      outline.scale.set(1.05, 1.05, 1.05);
-      key.add(outline);
-    });
-
-    blackKeys.forEach((key) => {
-      const outline = new THREE.Mesh(key.geometry.clone(), outlineMaterial);
-      outline.scale.multiplyScalar(1.15);
-      key.add(outline);
-    });
-
-    const ballOutline = new THREE.Mesh(ball.geometry.clone(), outlineMaterial);
-    ballOutline.scale.set(1.15, 1.15, 1.15);
-    ball.add(ballOutline);
-
-    walls.forEach((wall) => {
-      const outline = new THREE.Mesh(wall.geometry.clone(), outlineMaterial);
-      outline.scale.multiplyScalar(1.15);
-      wall.add(outline);
-    });
-
     return () => {
       window.removeEventListener("click", onMouseClick);
       clearInterval(wallInterval);
-      // mountRef.current.removeChild(renderer.domElement);
-      mountNode.removeChild(renderer.domElement); // Use local variable for cleanup
+      mountNode.removeChild(renderer.domElement);
     };
-  }, [gameOver, wallSpeed]);
+  }, [gameOver]);
 
-  return <div ref={mountRef} />;
+  return (
+    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+      <Background style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: -1 }} />
+      <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+    </div>
+  );
 };
 
 export default Piano;
