@@ -1,0 +1,136 @@
+/* Centraliza o menu e o conteúdo */
+.tone-runner-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Título centralizado */
+.title {
+    position: absolute;
+    top: 0.2vh; /* Responsivo em relação à altura da viewport */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10vh; /* Responsivo em relação à altura da viewport */
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Wheel centralizada entre os botões */
+.wheel {
+    width: 10vw; /* Equivalente responsivo ao tamanho original */
+    height: 10vw; /* Mantém a proporção para a roda */
+    background-color: black;
+    border: 0.5vw solid white; /* Bordas proporcionais */
+    border-radius: 50%;
+    position: absolute;
+    top: 50vh; /* Centralizado verticalmente */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+/* Seta ajustada dentro da wheel */
+.arrow {
+    width: 0;
+    height: 0;
+    border-left: 0.6vw solid transparent; /* Proporções ajustadas */
+    border-right: 0.6vw solid transparent;
+    border-bottom: 1.2vw solid white;
+    position: absolute;
+    transform-origin: center bottom;
+    top: 0.4vw;
+}
+
+/* Animação de hover com pulsar para todos os botões */
+.menu-button:hover {
+    animation: pulse 1s ease-out infinite;
+}
+
+/* Animação de pulsar */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 1vw rgba(0, 0, 0, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+/* Botão Start */
+.menu-button-1 {
+    position: absolute;
+    top: calc(50vh - 20vh); /* Posicionado de forma responsiva */
+    left: calc(50vw - 22vw); /* Responsivo em relação à largura */
+    width: 13vw; /* Proporção ajustada ao tamanho original */
+    height: 6vh; /* Altura ajustada para ser responsiva */
+    background-color: black;
+    color: white;
+    padding: 1vh 4vw; /* Ajustado para manter a proporção */
+    border-radius: 2vw; /* Proporção ajustada */
+    font-size: 2.5vh; /* Tamanho da fonte ajustado */
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* Botão Settings */
+.menu-button-2 {
+    position: absolute;
+    top: calc(50vh - 20vh); /* Mesma proporção do botão Start */
+    left: calc(50vw + 10vw); /* Ajustado para responsividade */
+    width: 13vw;
+    height: 6vh;
+    background-color: black;
+    color: white;
+    padding: 1vh 4vw;
+    border-radius: 2vw;
+    font-size: 2.5vh;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* Contêiner para centralizar o botão Go Back */
+.button-container {
+    position: absolute;
+    top: calc(50vh + 25vh); /* Ajuste proporcional */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Botão Go Back */
+.menu-button-3 {
+    background-color: black;
+    color: white;
+    padding: 1vh 4vw;
+    border-radius: 2vw;
+    font-size: 2.5vh;
+    text-align: center;
+    cursor: pointer;
+    width: 13vw;
+    height: 6vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}

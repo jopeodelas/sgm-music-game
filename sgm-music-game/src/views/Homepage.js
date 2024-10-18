@@ -54,7 +54,7 @@ const Homepage = () => {
   }, []);
 
   const goToToneRunner = () => {
-    navigate("/tonerunner");
+    navigate("/tonerunnermenu");
   };
 
   const toggleVolumeControl = () => {
