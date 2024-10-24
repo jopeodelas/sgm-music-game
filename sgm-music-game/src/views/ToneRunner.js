@@ -5,12 +5,47 @@ import TWEEN from "@tweenjs/tween.js";
 import Background from "../components/Background";
 
 const Piano = () => {
+  const [score, setScore] = useState(0);
   const mountRef = useRef(null);
   const [gameOver, setGameOver] = useState(false);
   const [wallSpeed, setWallSpeed] = useState(0.02);
   const ballSpeed = 0.1;
 
   useEffect(() => {
+    const handleKeyPress = (event) => {
+      const keyMap = {
+        'a': 'C4',
+        's': 'D4',
+        'd': 'E4',
+        'f': 'F4',
+        'g': 'G4',
+        'h': 'A4',
+        'j': 'B4',
+        'k': 'C5',
+        'w': 'C#4',
+        'e': 'D#4',
+        'r': 'F#4',
+        't': 'G#4',
+        'y': 'A#4'
+      };
+
+      const note = keyMap[event.key.toLowerCase()];
+      if (note) {
+        const key = [...whiteKeys, ...blackKeys].find(k => k.userData.note === note);
+        if (key) {
+          playNoteAndMoveBall(key.userData.note, key.userData.height);
+          setKeyColor(key, key.userData.color);
+
+          setTimeout(() => {
+            if (whiteKeys.includes(key)) {
+              setKeyColor(key, 0xffffff);
+            }
+          }, 200);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -211,11 +246,11 @@ const Piano = () => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
-
+      
       const intersects = raycaster.intersectObjects([
         ...whiteKeys,
         ...blackKeys,
-      ]);
+      ], false); // Only consider the original keys, not their outlines
       if (intersects.length > 0) {
         const key = intersects[0].object;
         playNoteAndMoveBall(key.userData.note, key.userData.height);
@@ -233,6 +268,11 @@ const Piano = () => {
       if (!blackKeys.includes(key)) {
         key.material.color.setHex(color);
       }
+      key.children.forEach(child => {
+        if (child.material && child.material.color) {
+          child.material.color.setHex(0x000000); // Keep outline color always black
+        }
+      });
     };
 
     const playNoteAndMoveBall = (note, height) => {
@@ -246,10 +286,10 @@ const Piano = () => {
       const wallPosition = wall.position.z;
       const ballPositionY = ball.position.y;
       const holeHeight = wall.userData.holeHeight;
-
       if (wallPosition <= -0.8 && wallPosition >= -1.2) {
         if (Math.abs(ballPositionY - holeHeight) < 0.2) {
           wall.userData.passed = true;
+          setScore(prevScore => prevScore + 1);
           return false;
         } else {
           return true;
@@ -293,6 +333,8 @@ const Piano = () => {
     animate();
 
     return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('keydown', handleKeyPress);
       window.removeEventListener("click", onMouseClick);
       clearInterval(wallInterval);
       mountNode.removeChild(renderer.domElement);
@@ -301,6 +343,7 @@ const Piano = () => {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+      <div style={{ position: "absolute", top: "10px", left: "10px", color: "black", fontSize: "24px", zIndex: 1 }}>Score: {score}</div>
       <Background style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: -1 }} />
       <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
     </div>
