@@ -3,13 +3,19 @@ import * as THREE from "three";
 import * as Tone from "tone";
 import TWEEN from "@tweenjs/tween.js";
 import Background from "../components/Background";
+import { useNavigate } from 'react-router-dom';
 
 const Piano = () => {
+  const navigate = useNavigate();
   const [score, setScore] = useState(0);
   const mountRef = useRef(null);
   const [gameOver, setGameOver] = useState(false);
   const [wallSpeed, setWallSpeed] = useState(0.02);
   const ballSpeed = 0.1;
+
+  // Carregar as configurações do localStorage
+  const volumeSetting = parseInt(localStorage.getItem("volume"), 10) || 50;
+  const isDarkMode = localStorage.getItem("darkMode") === "true";
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -45,7 +51,8 @@ const Piano = () => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -61,12 +68,13 @@ const Piano = () => {
     const mountNode = mountRef.current;
     mountNode.appendChild(renderer.domElement);
 
-    // Add lighting
+    // Definir luz e cor de acordo com o modo escuro
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    // Initialize Tone.js for sound
+    // Inicializar o sintetizador Tone.js e aplicar volume conforme as settings
     const synth = new Tone.Synth().toDestination();
+    synth.volume.value = Tone.gainToDb(volumeSetting / 100); // Aplicar o volume baseado na configuração
 
     // Note colors
     const noteColors = {
@@ -164,7 +172,7 @@ const Piano = () => {
 
     // Create the Pathway
     const createPathway = () => {
-      const pathwayMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+      const pathwayMaterial = new THREE.LineBasicMaterial({ color: isDarkMode ? 0xffffff : 0x000000 });
       const pathwayPoints = [];
       const edgePoints = [];
 
@@ -178,13 +186,11 @@ const Piano = () => {
       edgePoints.push(new THREE.Vector3(1.8, -2.5, -17));
       edgePoints.push(new THREE.Vector3(1.8, -2.5, -1));
 
-      const pathwayGeometry = new THREE.BufferGeometry().setFromPoints(
-        pathwayPoints
-      );
+      const pathwayGeometry = new THREE.BufferGeometry().setFromPoints(pathwayPoints);
       const pathway = new THREE.LineSegments(pathwayGeometry, pathwayMaterial);
       scene.add(pathway);
 
-      const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+      const edgeMaterial = new THREE.LineBasicMaterial({ color: isDarkMode ? 0xffffff : 0x000000 });
       const edgeGeometry = new THREE.BufferGeometry().setFromPoints(edgePoints);
       const edges = new THREE.Line(edgeGeometry, edgeMaterial);
       scene.add(edges);
@@ -247,10 +253,7 @@ const Piano = () => {
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
       
-      const intersects = raycaster.intersectObjects([
-        ...whiteKeys,
-        ...blackKeys,
-      ], false); // Only consider the original keys, not their outlines
+      const intersects = raycaster.intersectObjects([...whiteKeys, ...blackKeys], false);
       if (intersects.length > 0) {
         const key = intersects[0].object;
         playNoteAndMoveBall(key.userData.note, key.userData.height);
@@ -289,9 +292,18 @@ const Piano = () => {
       if (wallPosition <= -0.8 && wallPosition >= -1.2) {
         if (Math.abs(ballPositionY - holeHeight) < 0.2) {
           wall.userData.passed = true;
-          setScore(prevScore => prevScore + 1);
+          setScore(prevScore => {
+            const newScore = prevScore + 1;
+            localStorage.setItem("score", newScore); // Atualizar score no localStorage a cada ponto
+            return newScore;
+          });
           return false;
         } else {
+          // Salvando score final ao ocorrer game over
+          localStorage.setItem("score", score);
+          setGameOver(true);
+          clearInterval(wallInterval);
+          navigate("/tonerunnergameovermenu"); // Redirecionar para o menu de Game Over
           return true;
         }
       }
@@ -310,8 +322,7 @@ const Piano = () => {
           wall.position.z += wallSpeed;
 
           if (checkCollision(wall)) {
-            setGameOver(true);
-            clearInterval(wallInterval);
+            return;
           }
 
           if (wall.userData.passed && !wall.userData.removed) {
@@ -333,8 +344,7 @@ const Piano = () => {
     animate();
 
     return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener("keydown", handleKeyPress);
       window.removeEventListener("click", onMouseClick);
       clearInterval(wallInterval);
       mountNode.removeChild(renderer.domElement);
@@ -343,8 +353,8 @@ const Piano = () => {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      <div style={{ position: "absolute", top: "10px", left: "10px", color: "black", fontSize: "24px", zIndex: 1 }}>Score: {score}</div>
-      <Background style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: -1 }} />
+      <div style={{ position: "absolute", top: "10px", left: "10px", color: isDarkMode ? "white" : "black", fontSize: "24px", zIndex: 1 }}>Score: {score}</div>
+      <Background darkMode={isDarkMode} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: -1 }} />
       <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
     </div>
   );
