@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Background from '../components/Background'; 
-import Settings from '../components/Settings'; 
-import '../styles/ToneRunnerMenu.css'; 
-import menuMusic from '../assets/audio/ToneRunnerMenuMusic.mp3'; 
+import Background from '../components/Background'; // Caminho atualizado
+import Settings from '../components/Settings'; // Caminho atualizado
+import '../styles/ToneRunnerMenu.css'; // Certifique-se de que tens um arquivo CSS para este componente
+import menuMusic from '../assets/audio/ToneRunnerMenuMusic.mp3'; // Caminho atualizado para o ficheiro de áudio
 
 const ToneRunnerMenu = () => {
     const navigate = useNavigate();

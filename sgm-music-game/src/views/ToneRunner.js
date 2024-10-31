@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useLocation } from 'react-router-dom';
 import * as THREE from "three";
 import * as Tone from "tone";
 import TWEEN from "@tweenjs/tween.js";
@@ -6,8 +7,9 @@ import Background from "../components/Background";
 import { useNavigate } from 'react-router-dom';
 
 const Piano = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState(location.state?.score || 0);
   const mountRef = useRef(null);
   const [gameOver, setGameOver] = useState(false);
   const [wallSpeed, setWallSpeed] = useState(0.02);
@@ -16,6 +18,12 @@ const Piano = () => {
   // Carregar as configurações do localStorage
   const volumeSetting = parseInt(localStorage.getItem("volume"), 10) || 50;
   const isDarkMode = localStorage.getItem("darkMode") === "true";
+
+  // Sincronizar o score com o localStorage
+  useEffect(() => {
+    localStorage.setItem("score", score);
+    console.log("Score sincronizado com o localStorage:", score);
+  }, [score]);
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -292,18 +300,12 @@ const Piano = () => {
       if (wallPosition <= -0.8 && wallPosition >= -1.2) {
         if (Math.abs(ballPositionY - holeHeight) < 0.2) {
           wall.userData.passed = true;
-          setScore(prevScore => {
-            const newScore = prevScore + 1;
-            localStorage.setItem("score", newScore); // Atualizar score no localStorage a cada ponto
-            return newScore;
-          });
+          setScore(prevScore => prevScore + 1);
           return false;
         } else {
-          // Salvando score final ao ocorrer game over
-          localStorage.setItem("score", score);
           setGameOver(true);
           clearInterval(wallInterval);
-          navigate("/tonerunnergameovermenu"); // Redirecionar para o menu de Game Over
+          navigate("/tonerunnergameovermenu", { state: { score } }); // Redirecionar para o menu de Game Over
           return true;
         }
       }
