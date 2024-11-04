@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Background from "../components/Background";
-import * as Tone from "tone";
 import * as THREE from "three";
+import mainAudioFile from "../assets/audio/MIAU.mp3";
 
 const ToneRunnerGameOverMenu = () => {
     const navigate = useNavigate();
@@ -13,18 +13,16 @@ const ToneRunnerGameOverMenu = () => {
         return isNaN(savedScore) ? (location.state?.score || 0) : savedScore;
     });
     const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem("darkMode") === "true" || false);
-    const volumeSetting = parseInt(localStorage.getItem("volume"), 10) || 50;
     const [scene, setScene] = useState(null);
     const [renderer, setRenderer] = useState(null);
 
     useEffect(() => {
         const style = document.createElement("style");
-        style.textContent = `
-            .game-over-menu {
+        style.textContent = 
+            `.game-over-menu {
                 position: absolute;
                 top: 0;
                 left: 0;
-
                 height: 100vh;
                 display: flex;
                 flex-direction: column;
@@ -72,8 +70,7 @@ const ToneRunnerGameOverMenu = () => {
             .dark .game-over-button {
                 background-color: white;
                 color: black;
-            }
-        `;
+            }`;
         document.head.appendChild(style);
 
         // Configura Three.js para o piano animado
@@ -89,12 +86,28 @@ const ToneRunnerGameOverMenu = () => {
         setScene(newScene);
         setRenderer(newRenderer);
 
-        // Configura o sintetizador Tone.js com o volume baseado nas configurações
-        const synth = new Tone.Synth().toDestination();
-        synth.volume.value = Tone.gainToDb(volumeSetting / 100);
-        const notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
+        // Definir cores para as notas
+        const noteColors = {
+            "C4": 0xff0000,
+            "D4": 0x00ff00,
+            "E4": 0x0000ff,
+            "F4": 0xffff00,
+            "G4": 0xff00ff,
+            "A4": 0x00ffff,
+            "B4": 0xffa500,
+            "C5": 0x800080,
+            "C#4": 0x8b0000,
+            "D#4": 0x006400,
+            "F#4": 0x00008b,
+            "G#4": 0x8b008b,
+            "A#4": 0x008b8b,
+            "E3": 0x4682b4, 
+            "G#3": 0x483d8b,
+            "B3": 0xff6347,
+            "D#3": 0x9acd32,
+        };
 
-        // Cria o piano
+        // Cria o piano, incluindo teclas pretas
         const createPiano = () => {
             const whiteKeyMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
             const blackKeyMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
@@ -104,16 +117,7 @@ const ToneRunnerGameOverMenu = () => {
             const whiteKeys = [];
             const blackKeys = [];
 
-            const noteHeights = {
-                C4: -1.2,
-                D4: -0.9,
-                E4: -0.6,
-                F4: -0.3,
-                G4: 0.0,
-                A4: 0.3,
-                B4: 0.6,
-                C5: 0.9,
-            };
+            const notes = ["E3", "G#3", "B3", "C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
 
             for (let i = 0; i < notes.length; i++) {
                 const whiteKey = new THREE.Mesh(
@@ -123,7 +127,7 @@ const ToneRunnerGameOverMenu = () => {
                 whiteKey.position.x = i * (keyWidth + 0.1) - ((notes.length - 1) * (keyWidth + 0.1)) / 2;
                 whiteKey.position.y = -2;
                 whiteKey.position.z = 2;
-                whiteKey.userData = { note: notes[i] };
+                whiteKey.userData = { note: notes[i], color: noteColors[notes[i]], active: false };
                 whiteKeys.push(whiteKey);
                 newScene.add(whiteKey);
 
@@ -144,7 +148,7 @@ const ToneRunnerGameOverMenu = () => {
                 blackKey.position.x = offset * (keyWidth + 0.1) - ((notes.length - 1) * (keyWidth + 0.1)) / 2;
                 blackKey.position.y = -1.9;
                 blackKey.position.z = 2;
-                blackKey.userData = { note: blackNotes[index] };
+                blackKey.userData = { note: blackNotes[index], color: noteColors[blackNotes[index]], active: false };
                 blackKeys.push(blackKey);
                 newScene.add(blackKey);
             });
@@ -154,31 +158,144 @@ const ToneRunnerGameOverMenu = () => {
 
         const { whiteKeys, blackKeys } = createPiano();
 
-        // Função para tocar o piano automaticamente
-        const playPiano = async () => {
-            await Tone.start();
-            let index = 0;
-            const playNote = () => {
-                const key = [...whiteKeys, ...blackKeys][index % (whiteKeys.length + blackKeys.length)];
-                synth.triggerAttackRelease(key.userData.note, "8n");
-                key.material.color.setHex(0xffff00);
+        const noteEvents = [
+            // Adicionando uma espera inicial de 3 segundos
+            
+        
+            // Primeira sequência de notas (partitura fornecida)
+            { note: "E3", action: "press", timestamp: 3000 },
+            { note: "E3", action: "release", timestamp: 4500 },
+            { note: "G#3", action: "press", timestamp: 4500 },
+            { note: "G#3", action: "release", timestamp: 6000 },
+        
+            // Acorde de A maior
+            { note: "A3", action: "press", timestamp: 6000 },
+            { note: "C#4", action: "press", timestamp: 6000 },
+            { note: "E4", action: "press", timestamp: 6000 },
+            { note: "A3", action: "release", timestamp: 7500 },
+            { note: "C#4", action: "release", timestamp: 7500 },
+            { note: "E4", action: "release", timestamp: 7500 },
+        
+            // E maior
+            { note: "E3", action: "press", timestamp: 7500 },
+            { note: "B3", action: "press", timestamp: 7500 },
+            { note: "E4", action: "press", timestamp: 7500 },
+            { note: "E3", action: "release", timestamp: 9000 },
+            { note: "B3", action: "release", timestamp: 9000 },
+            { note: "E4", action: "release", timestamp: 9000 },
+        
+            // G#m
+            { note: "G#3", action: "press", timestamp: 9000 },
+            { note: "B3", action: "press", timestamp: 9000 },
+            { note: "D#4", action: "press", timestamp: 9000 },
+            { note: "G#3", action: "release", timestamp: 10500 },
+            { note: "B3", action: "release", timestamp: 10500 },
+            { note: "D#4", action: "release", timestamp: 10500 },
+        
+            // Acorde de A maior
+            { note: "A3", action: "press", timestamp: 10500 },
+            { note: "C#4", action: "press", timestamp: 10500 },
+            { note: "E4", action: "press", timestamp: 10500 },
+            { note: "A3", action: "release", timestamp: 12000 },
+            { note: "C#4", action: "release", timestamp: 12000 },
+            { note: "E4", action: "release", timestamp: 12000 },
+        
+            // E maior
+            { note: "E3", action: "press", timestamp: 12000 },
+            { note: "B3", action: "press", timestamp: 12000 },
+            { note: "E4", action: "press", timestamp: 12000 },
+            { note: "E3", action: "release", timestamp: 13500 },
+            { note: "B3", action: "release", timestamp: 13500 },
+            { note: "E4", action: "release", timestamp: 13500 },
+        
+            // G#m
+            { note: "G#3", action: "press", timestamp: 13500 },
+            { note: "B3", action: "press", timestamp: 13500 },
+            { note: "D#4", action: "press", timestamp: 13500 },
+            { note: "G#3", action: "release", timestamp: 15000 },
+            { note: "B3", action: "release", timestamp: 15000 },
+            { note: "D#4", action: "release", timestamp: 15000 },
+        
+            // A maior novamente
+            { note: "A3", action: "press", timestamp: 15000 },
+            { note: "C#4", action: "press", timestamp: 15000 },
+            { note: "E4", action: "press", timestamp: 15000 },
+            { note: "A3", action: "release", timestamp: 16500 },
+            { note: "C#4", action: "release", timestamp: 16500 },
+            { note: "E4", action: "release", timestamp: 16500 },
+        
+            // E maior novamente
+            { note: "E3", action: "press", timestamp: 16500 },
+            { note: "B3", action: "press", timestamp: 16500 },
+            { note: "E4", action: "press", timestamp: 16500 },
+            { note: "E3", action: "release", timestamp: 18000 },
+            { note: "B3", action: "release", timestamp: 18000 },
+            { note: "E4", action: "release", timestamp: 18000 },
+        
+            // G#m novamente
+            { note: "G#3", action: "press", timestamp: 18000 },
+            { note: "B3", action: "press", timestamp: 18000 },
+            { note: "D#4", action: "press", timestamp: 18000 },
+            { note: "G#3", action: "release", timestamp: 19500 },
+            { note: "B3", action: "release", timestamp: 19500 },
+            { note: "D#4", action: "release", timestamp: 19500 },
+        
+            // Concluindo com A maior
+            { note: "A3", action: "press", timestamp: 19500 },
+            { note: "C#4", action: "press", timestamp: 19500 },
+            { note: "E4", action: "press", timestamp: 19500 },
+            { note: "A3", action: "release", timestamp: 21000 },
+            { note: "C#4", action: "release", timestamp: 21000 },
+            { note: "E4", action: "release", timestamp: 21000 },
+        ];
 
-                setTimeout(() => {
-                    if (whiteKeys.includes(key)) {
-                        key.material.color.setHex(0xffffff);
-                    } else {
-                        key.material.color.setHex(0x000000);
-                    }
-                }, 200);
+        // Repetir até atingir 1:49 minutos (109 segundos)
+        const totalDurationMs = 109 * 1000;
+        let currentDurationMs = noteEvents[noteEvents.length - 1]?.timestamp || 0;
 
-                index++;
-                if (index < (whiteKeys.length + blackKeys.length) * 3) {
-                    setTimeout(playNote, 300);
+        // Criar uma cópia dos eventos iniciais e repetir até completar 109 segundos
+        const originalEvents = [...noteEvents];
+        while (currentDurationMs < totalDurationMs) {
+            originalEvents.forEach(event => {
+                if (event.note !== "wait") {
+                    const newEvent = { ...event, timestamp: event.timestamp + currentDurationMs };
+                    noteEvents.push(newEvent);
                 }
-            };
-            playNote();
+            });
+            currentDurationMs = noteEvents[noteEvents.length - 1]?.timestamp || 0;
+        }
+
+        // Função para tocar as notas sincronizadas com os timestamps
+        const playNotesWithTimestamps = (noteEvents) => {
+            noteEvents.forEach(event => {
+                setTimeout(() => {
+                    if (event.note === "wait") {
+                        return;
+                    }
+                    const { note, action } = event;
+                    const key = [...whiteKeys, ...blackKeys].find(k => k.userData.note === note);
+                    if (key) {
+                        if (action === "press") {
+                            key.userData.active = true;
+                            key.material.color.setHex(key.userData.color);
+                        } else if (action === "release") {
+                            key.userData.active = false;
+                            key.material.color.setHex(whiteKeys.includes(key) ? 0xffffff : 0x000000);
+                        }
+                    }
+                }, event.timestamp);
+            });
         };
-        playPiano();
+
+        // Tocar o áudio e sincronizar as notas
+        const mainAudio = new Audio(mainAudioFile);
+
+        mainAudio.addEventListener('canplaythrough', () => {
+            mainAudio.play().catch((error) => {
+                console.error("Erro ao tentar tocar o áudio principal:", error);
+            });
+            playNotesWithTimestamps(noteEvents);
+        });
 
         // Renderiza a animação do piano
         const animate = () => {
@@ -190,6 +307,10 @@ const ToneRunnerGameOverMenu = () => {
         return () => {
             newRenderer.dispose();
             document.head.removeChild(style);
+            if (!mainAudio.paused) {
+                mainAudio.pause();
+                mainAudio.currentTime = 0;
+            }
         };
     }, []);
 
