@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState } from "react";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import * as THREE from "three";
 import * as Tone from "tone";
 import TWEEN from "@tweenjs/tween.js";
 import Background from "../components/Background";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const Piano = () => {
   const location = useLocation();
@@ -28,24 +28,26 @@ const Piano = () => {
   useEffect(() => {
     const handleKeyPress = (event) => {
       const keyMap = {
-        'a': 'C4',
-        's': 'D4',
-        'd': 'E4',
-        'f': 'F4',
-        'g': 'G4',
-        'h': 'A4',
-        'j': 'B4',
-        'k': 'C5',
-        'w': 'C#4',
-        'e': 'D#4',
-        'r': 'F#4',
-        't': 'G#4',
-        'y': 'A#4'
+        a: "C4",
+        s: "D4",
+        d: "E4",
+        f: "F4",
+        g: "G4",
+        h: "A4",
+        j: "B4",
+        k: "C5",
+        w: "C#4",
+        e: "D#4",
+        r: "F#4",
+        t: "G#4",
+        y: "A#4",
       };
 
       const note = keyMap[event.key.toLowerCase()];
       if (note) {
-        const key = [...whiteKeys, ...blackKeys].find(k => k.userData.note === note);
+        const key = [...whiteKeys, ...blackKeys].find(
+          (k) => k.userData.note === note
+        );
         if (key) {
           playNoteAndMoveBall(key.userData.note, key.userData.height);
           setKeyColor(key, key.userData.color);
@@ -135,7 +137,10 @@ const Piano = () => {
       scene.add(whiteKey);
 
       // Add outline to white keys
-      const outline = new THREE.Mesh(whiteKey.geometry.clone(), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }));
+      const outline = new THREE.Mesh(
+        whiteKey.geometry.clone(),
+        new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide })
+      );
       outline.scale.set(1.05, 1.05, 1.02);
       whiteKey.add(outline);
     }
@@ -172,7 +177,10 @@ const Piano = () => {
     scene.add(ball);
 
     // Add outline to the ball
-    const ballOutline = new THREE.Mesh(ball.geometry.clone(), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }));
+    const ballOutline = new THREE.Mesh(
+      ball.geometry.clone(),
+      new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide })
+    );
     ballOutline.scale.set(1.15, 1.15, 1.15);
     ball.add(ballOutline);
 
@@ -180,7 +188,9 @@ const Piano = () => {
 
     // Create the Pathway
     const createPathway = () => {
-      const pathwayMaterial = new THREE.LineBasicMaterial({ color: isDarkMode ? 0xffffff : 0x000000 });
+      const pathwayMaterial = new THREE.LineBasicMaterial({
+        color: isDarkMode ? 0xffffff : 0x000000,
+      });
       const pathwayPoints = [];
       const edgePoints = [];
 
@@ -194,11 +204,15 @@ const Piano = () => {
       edgePoints.push(new THREE.Vector3(1.8, -2.5, -17));
       edgePoints.push(new THREE.Vector3(1.8, -2.5, -1));
 
-      const pathwayGeometry = new THREE.BufferGeometry().setFromPoints(pathwayPoints);
+      const pathwayGeometry = new THREE.BufferGeometry().setFromPoints(
+        pathwayPoints
+      );
       const pathway = new THREE.LineSegments(pathwayGeometry, pathwayMaterial);
       scene.add(pathway);
 
-      const edgeMaterial = new THREE.LineBasicMaterial({ color: isDarkMode ? 0xffffff : 0x000000 });
+      const edgeMaterial = new THREE.LineBasicMaterial({
+        color: isDarkMode ? 0xffffff : 0x000000,
+      });
       const edgeGeometry = new THREE.BufferGeometry().setFromPoints(edgePoints);
       const edges = new THREE.Line(edgeGeometry, edgeMaterial);
       scene.add(edges);
@@ -243,7 +257,8 @@ const Piano = () => {
     };
 
     const generateWalls = () => {
-      if (walls.length < 5) {  // Limit the number of walls in the scene to improve performance
+      if (walls.length < 5) {
+        // Limit the number of walls in the scene to improve performance
         const randomIndex = Math.floor(Math.random() * whiteKeys.length);
         const randomNote = whiteKeys[randomIndex].userData.note;
         const randomHeight = whiteKeys[randomIndex].userData.height;
@@ -260,8 +275,11 @@ const Piano = () => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
-      
-      const intersects = raycaster.intersectObjects([...whiteKeys, ...blackKeys], false);
+
+      const intersects = raycaster.intersectObjects(
+        [...whiteKeys, ...blackKeys],
+        false
+      );
       if (intersects.length > 0) {
         const key = intersects[0].object;
         playNoteAndMoveBall(key.userData.note, key.userData.height);
@@ -270,7 +288,7 @@ const Piano = () => {
         setTimeout(() => {
           if (whiteKeys.includes(key)) {
             setKeyColor(key, 0xffffff);
-          } 
+          }
         }, 200);
       }
     };
@@ -279,7 +297,7 @@ const Piano = () => {
       if (!blackKeys.includes(key)) {
         key.material.color.setHex(color);
       }
-      key.children.forEach(child => {
+      key.children.forEach((child) => {
         if (child.material && child.material.color) {
           child.material.color.setHex(0x000000); // Keep outline color always black
         }
@@ -300,7 +318,7 @@ const Piano = () => {
       if (wallPosition <= -0.8 && wallPosition >= -1.2) {
         if (Math.abs(ballPositionY - holeHeight) < 0.2) {
           wall.userData.passed = true;
-          setScore(prevScore => prevScore + 1);
+          setScore((prevScore) => prevScore + 1);
           return false;
         } else {
           setGameOver(true);
@@ -316,7 +334,11 @@ const Piano = () => {
       requestAnimationFrame(animate);
 
       // Smoothly interpolate the ball position towards the target
-      ball.position.y = THREE.MathUtils.lerp(ball.position.y, targetY, ballSpeed);
+      ball.position.y = THREE.MathUtils.lerp(
+        ball.position.y,
+        targetY,
+        ballSpeed
+      );
       ball.position.y = THREE.MathUtils.clamp(ball.position.y, -2.5, 1.5);
 
       walls.forEach((wall) => {
@@ -336,7 +358,9 @@ const Piano = () => {
       });
 
       // Filter out removed walls
-      const filteredWalls = walls.filter((wall) => wall && !wall.userData.removed);
+      const filteredWalls = walls.filter(
+        (wall) => wall && !wall.userData.removed
+      );
       walls.length = 0;
       walls.push(...filteredWalls);
 
@@ -355,9 +379,39 @@ const Piano = () => {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      <div style={{ position: "absolute", top: "10px", left: "10px", color: isDarkMode ? "white" : "black", fontSize: "24px", zIndex: 1 }}>Score: {score}</div>
-      <Background darkMode={isDarkMode} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: -1 }} />
-      <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+      <div
+        style={{
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          color: isDarkMode ? "white" : "black",
+          fontSize: "24px",
+          zIndex: 1,
+        }}
+      >
+        Score: {score}
+      </div>
+      <Background
+        darkMode={isDarkMode}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: -1,
+        }}
+      />
+      <div
+        ref={mountRef}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+        }}
+      />
     </div>
   );
 };
