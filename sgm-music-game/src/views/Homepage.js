@@ -57,6 +57,10 @@ const Homepage = () => {
     navigate("/tonerunnermenu");
   };
 
+  const goToFreeMode = () => {
+    navigate("/freemode");
+  };
+
   const toggleVolumeControl = () => {
     setShowVolumeControl(!showVolumeControl);
   };
@@ -205,6 +209,7 @@ const Homepage = () => {
             id="tile-4"
             onMouseEnter={() => handleWhiteTileHover(4)}
             onMouseLeave={() => handleWhiteTileLeave(4)}
+            onClick={goToFreeMode}
           >
             <div>
               <FreeModeIcon className="icon" />
@@ -219,6 +224,7 @@ const Homepage = () => {
             ref={tileRefs.current[4]}
             onMouseEnter={() => handleBlackTileHover(4)}
             onMouseLeave={() => handleBlackTileLeave(4)}
+            onClick={goToFreeMode}
           >
             {tileDescriptions[4] && (
               <span className="tileDescription">
