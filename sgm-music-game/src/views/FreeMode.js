@@ -40,7 +40,15 @@ const FreeMode = () => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    const synth = new Tone.Synth().toDestination();
+    // Inicializar o sintetizador apenas uma vez
+    const synth = new Tone.PolySynth(Tone.Synth, {
+      envelope: {
+        attack: 0.01,
+        decay: 0.2,
+        sustain: 0.5,
+        release: 1, // O som se desvanecerá ao longo de 2 segundos ao soltar a tecla
+      },
+    }).toDestination();
     const volumeSetting = parseInt(localStorage.getItem("volume"), 10) || 50;
     synth.volume.value = Tone.gainToDb(volumeSetting / 100);
 
@@ -61,7 +69,24 @@ const FreeMode = () => {
       "A#4": 0x444444,
     };
 
-    // Criar as teclas brancas
+    // Mapeamento de teclas do teclado para notas
+    const keyMap = {
+      a: "C4",
+      s: "D4",
+      d: "E4",
+      f: "F4",
+      g: "G4",
+      h: "A4",
+      j: "B4",
+      k: "C5",
+      w: "C#4",
+      e: "D#4",
+      r: "F#4",
+      t: "G#4",
+      y: "A#4",
+    };
+
+    // Criar teclas brancas
     const keyWidth = 0.55;
     const keyHeight = 0.22;
     const keyDepth = 2.2;
@@ -76,7 +101,7 @@ const FreeMode = () => {
       );
       whiteKey.position.x =
         i * (keyWidth + 0.1) - ((notes.length - 1) * (keyWidth + 0.1)) / 2;
-      whiteKey.position.y = -1.5; // Ajustar para não sobrepor o ícone de gravação
+      whiteKey.position.y = -1.2; // Ajustado para centralizar melhor o piano
       whiteKey.position.z = 2;
       whiteKey.userData = {
         note: notes[i],
@@ -93,7 +118,7 @@ const FreeMode = () => {
       whiteKey.add(outline);
     }
 
-    // Criar as teclas pretas
+    // Criar teclas pretas
     const blackKeys = [];
     const blackKeyOffsets = [0.75, 1.75, 3.25, 4.25, 5.25];
     const blackNotes = ["C#4", "D#4", "F#4", "G#4", "A#4"];
@@ -106,7 +131,7 @@ const FreeMode = () => {
       );
       blackKey.position.x =
         offset * (keyWidth + 0.1) - ((notes.length - 1) * (keyWidth + 0.1)) / 2;
-      blackKey.position.y = -1.4; // Ajustar alinhamento com as teclas brancas
+      blackKey.position.y = -1.1; // Ajustar alinhamento com as teclas brancas
       blackKey.position.z = 2;
       blackKey.userData = {
         note: blackNotes[index],
@@ -117,24 +142,31 @@ const FreeMode = () => {
     });
 
     // Função para tocar notas e mudar cores
-    const playNoteAndChangeColor = (key) => {
+    const playNoteAndChangeColor = async (key) => {
       const { note, color } = key.userData;
-      synth.triggerAttackRelease(note, "8n");
 
-      if (whiteKeys.includes(key)) {
-        key.material.color.setHex(color);
-        setTimeout(() => key.material.color.setHex(0xffffff), 200);
-      } else if (blackKeys.includes(key)) {
-        key.material.color.setHex(0x555555);
-        setTimeout(() => key.material.color.setHex(0x000000), 200);
+      // Iniciar o contexto de áudio
+      if (Tone.context.state !== "running") {
+        await Tone.start();
       }
+
+      synth.triggerAttack(note, undefined, 0.8); // Volume inicial a 80%
+      key.material.color.setHex(color);
     };
 
-    // Detectar cliques nas teclas
+    const releaseNote = (key) => {
+      const { note } = key.userData;
+      synth.triggerRelease(note);
+      key.material.color.setHex(whiteKeys.includes(key) ? 0xffffff : 0x000000);
+    };
+
+    // Detectar cliques e teclado
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    const onMouseClick = (event) => {
+    let currentKey = null; // Variável para controlar qual tecla está pressionada pelo rato
+
+    const onMouseDown = (event) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
@@ -144,11 +176,85 @@ const FreeMode = () => {
         false
       );
       if (intersects.length > 0) {
-        playNoteAndChangeColor(intersects[0].object);
+        const key = intersects[0].object;
+        key.isPressed = true;
+        currentKey = key;
+        playNoteAndChangeColor(key);
       }
     };
 
-    window.addEventListener("click", onMouseClick);
+    const onMouseMove = (event) => {
+      if (!currentKey) return;
+
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      const intersects = raycaster.intersectObjects(
+        [...whiteKeys, ...blackKeys],
+        false
+      );
+      if (intersects.length > 0) {
+        const key = intersects[0].object;
+        if (key !== currentKey) {
+          releaseNoteWithFadeOut(currentKey);
+          currentKey.isPressed = false;
+          currentKey = key;
+          key.isPressed = true;
+          playNoteAndChangeColor(key);
+        }
+      } else {
+        releaseNoteWithFadeOut(currentKey);
+        currentKey.isPressed = false;
+        currentKey = null;
+      }
+    };
+
+    const onMouseUp = () => {
+      if (currentKey) {
+        releaseNoteWithFadeOut(currentKey);
+        currentKey.isPressed = false;
+        currentKey = null;
+      }
+    };
+
+    const handleKeyPress = (event) => {
+      const note = keyMap[event.key.toLowerCase()];
+      if (note) {
+        const key = [...whiteKeys, ...blackKeys].find(
+          (k) => k.userData.note === note
+        );
+        if (key && !key.isPressed) {
+          key.isPressed = true;
+          playNoteAndChangeColor(key);
+        }
+      }
+    };
+
+    const handleKeyRelease = (event) => {
+      const note = keyMap[event.key.toLowerCase()];
+      if (note) {
+        const key = [...whiteKeys, ...blackKeys].find(
+          (k) => k.userData.note === note
+        );
+        if (key && key.isPressed) {
+          key.isPressed = false;
+          releaseNoteWithFadeOut(key);
+        }
+      }
+    };
+
+    const releaseNoteWithFadeOut = (key) => {
+      const { note } = key.userData;
+      synth.triggerRelease(note);
+      key.material.color.setHex(whiteKeys.includes(key) ? 0xffffff : 0x000000);
+    };
+
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("keydown", handleKeyPress);
+    window.addEventListener("keyup", handleKeyRelease);
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -157,7 +263,11 @@ const FreeMode = () => {
     animate();
 
     return () => {
-      window.removeEventListener("click", onMouseClick);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("keydown", handleKeyPress);
+      window.removeEventListener("keyup", handleKeyRelease);
       mountNode.removeChild(renderer.domElement);
     };
   }, [isDarkMode]);
@@ -175,7 +285,7 @@ const FreeMode = () => {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      {/* Ícones no topo */}
+      {/* Ícones */}
       <div
         style={{
           position: "absolute",
@@ -183,12 +293,12 @@ const FreeMode = () => {
           left: "10px",
           zIndex: 1,
         }}
-        onClick={() => navigate("/homepage")}
+        onClick={() => navigate("/")}
       >
         <img
           src={isDarkMode ? GobackWhite : GobackBlack}
           alt="Go Back"
-          style={{ width: "50px", height: "50px" }} // Reduzir o tamanho do ícone
+          style={{ width: "100px", height: "100px" }}
         />
       </div>
       <div
@@ -202,10 +312,9 @@ const FreeMode = () => {
         <img
           src={isDarkMode ? CloudWhite : CloudBlack}
           alt="Cloud"
-          style={{ width: "50px", height: "50px" }} // Reduzir o tamanho do ícone
+          style={{ width: "100px", height: "100px" }}
         />
       </div>
-      {/* Ícone de gravação no centro inferior */}
       <div
         style={{
           position: "absolute",
@@ -219,29 +328,13 @@ const FreeMode = () => {
         <img
           src={isRecording ? RecordFinal : RecordInicial}
           alt="Record"
-          style={{ width: "60px", height: "60px" }} // Reduzir o tamanho do ícone
+          style={{ width: "100px", height: "100px" }}
         />
       </div>
-      <Background
-        darkMode={isDarkMode}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          zIndex: -1,
-        }}
-      />
+      <Background darkMode={isDarkMode} />
       <div
         ref={mountRef}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-        }}
+        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
       />
     </div>
   );
