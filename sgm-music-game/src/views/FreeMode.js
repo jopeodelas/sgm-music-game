@@ -3,6 +3,8 @@ import * as THREE from "three";
 import * as Tone from "tone";
 import Background from "../components/Background";
 import { useNavigate } from "react-router-dom";
+import { saveAs } from "file-saver";
+import ReactDOM from 'react-dom';
 
 // Importar os ícones
 import GobackBlack from "../assets/icons/Goback-freemode-black.svg";
@@ -19,6 +21,13 @@ const FreeMode = () => {
     localStorage.getItem("darkMode") === "true"
   );
   const [isRecording, setIsRecording] = useState(false); // Controle do estado de gravação
+  const [recordings, setRecordings] = useState([]); // Lista de gravações
+  const [recordStartTime, setRecordStartTime] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const timerRef = useRef(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const audioDestinationRef = useRef(null); // Referência para o destino de áudio
 
   useEffect(() => {
     // Configuração básica da cena e da câmera
@@ -40,17 +49,28 @@ const FreeMode = () => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
+    // Adicionar o fundo à cena para que seja capturado na gravação
+    const backgroundTexture = new THREE.TextureLoader().load(
+      isDarkMode ? "../assets/background-dark.png" : "../assets/background-light.png"
+    );
+    scene.background = backgroundTexture;
+
     // Inicializar o sintetizador apenas uma vez
     const synth = new Tone.PolySynth(Tone.Synth, {
       envelope: {
         attack: 0.01,
         decay: 0.2,
         sustain: 0.5,
-        release: 1, // O som se desvanecerá ao longo de 2 segundos ao soltar a tecla
+        release: 2, // O som se desvanecerá ao longo de 2 segundos ao soltar a tecla
       },
     }).toDestination();
     const volumeSetting = parseInt(localStorage.getItem("volume"), 10) || 50;
     synth.volume.value = Tone.gainToDb(volumeSetting / 100);
+
+    // Criar um MediaStreamDestination e conectar ao sintetizador para capturar áudio
+    const audioDestination = Tone.context.createMediaStreamDestination();
+    synth.connect(audioDestination);
+    audioDestinationRef.current = audioDestination; // Armazenar referência no ref
 
     // Configurar as cores para as notas
     const noteColors = {
@@ -272,15 +292,134 @@ const FreeMode = () => {
     };
   }, [isDarkMode]);
 
-  const handleRecordClick = () => {
+  const handleRecordClick = async () => {
     if (isRecording) {
       console.log("Parando gravação...");
-      // Lógica para parar a gravação
+      mediaRecorderRef.current.stop();
+      clearInterval(timerRef.current);
+      setIsRecording(false);
     } else {
       console.log("Iniciando gravação...");
-      // Lógica para iniciar a gravação
+      setIsRecording(true);
+      setRecordStartTime(Date.now());
+      setElapsedTime(0);
+
+      // Criação do stream a partir do elemento específico
+      const canvasStream = mountRef.current.children[0].captureStream(30);
+
+      // Usar o áudio do destino conectado ao sintetizador
+      const audioStream = audioDestinationRef.current.stream;
+
+      const combinedStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...audioStream.getAudioTracks(),
+      ]);
+
+      mediaRecorderRef.current = new MediaRecorder(combinedStream, {
+        mimeType: "video/webm",
+      });
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+
+        const recordingData = {
+          url,
+          name: `Recording ${recordings.length + 1}`,
+          createdAt: new Date().toLocaleString(),
+          duration: elapsedTime,
+        };
+
+        setRecordings((prevRecordings) => [...prevRecordings, recordingData]);
+        chunksRef.current = [];
+      };
+
+      mediaRecorderRef.current.start();
+      timerRef.current = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+      }, 1000);
     }
-    setIsRecording(!isRecording);
+  };
+
+const showCloudRecordings = () => {
+    // Criar uma janela modal para as gravações
+    const modal = (
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          backgroundColor: "#fff",
+          padding: "20px",
+          boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.5)",
+          zIndex: 10,
+          width: "600px",
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <img src={isDarkMode ? CloudWhite : CloudBlack} alt="Cloud" style={{ width: "30px", height: "30px", marginRight: "10px" }} />
+          <h2>Saved Recordings</h2>
+        </div>
+        <button
+          onClick={() => document.body.removeChild(document.getElementById("modal-container"))}
+          style={{ position: "absolute", top: "10px", right: "10px" }}
+        >
+          Close
+        </button>
+        {recordings.map((rec, index) => (
+          <div
+            key={index}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderBottom: "1px solid #ccc",
+              padding: "10px 0",
+            }}
+          >
+            <video
+              src={rec.url}
+              width="100"
+              height="60"
+              controls
+              style={{ marginRight: "20px" }}
+            />
+            <div style={{ flexGrow: 1 }}>
+              <div><strong>{rec.name}</strong></div>
+              <div>Created: {rec.createdAt}</div>
+              <div>Duration: {rec.duration}s</div>
+            </div>
+            <div>
+              <button onClick={() => window.open(rec.url)}>Play</button>
+              <button onClick={() => saveAs(rec.url, `${rec.name}.webm`)} style={{ marginLeft: "10px" }}>Download</button>
+              <button style={{ marginLeft: "10px" }}>Share</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+
+    const modalContainer = document.createElement("div");
+    modalContainer.id = "modal-container";
+    modalContainer.style.position = "fixed";
+    modalContainer.style.top = "0";
+    modalContainer.style.left = "0";
+    modalContainer.style.width = "100%";
+    modalContainer.style.height = "100%";
+    modalContainer.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+    modalContainer.style.zIndex = "9";
+    document.body.appendChild(modalContainer);
+    
+    ReactDOM.render(modal, modalContainer);
   };
 
   return (
@@ -293,7 +432,7 @@ const FreeMode = () => {
           left: "10px",
           zIndex: 1,
         }}
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/homepage")}
       >
         <img
           src={isDarkMode ? GobackWhite : GobackBlack}
@@ -308,6 +447,7 @@ const FreeMode = () => {
           right: "10px",
           zIndex: 1,
         }}
+        onClick={showCloudRecordings}
       >
         <img
           src={isDarkMode ? CloudWhite : CloudBlack}
@@ -331,6 +471,21 @@ const FreeMode = () => {
           style={{ width: "100px", height: "100px" }}
         />
       </div>
+      {isRecording && (
+        <div
+          style={{
+            position: "absolute",
+            top: "10px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            color: isDarkMode ? "#fff" : "#000",
+            fontSize: "2rem",
+            zIndex: 2,
+          }}
+        >
+          {`0:${elapsedTime < 10 ? "0" : ""}${elapsedTime}`}
+        </div>
+      )}
       <Background darkMode={isDarkMode} />
       <div
         ref={mountRef}
@@ -341,3 +496,4 @@ const FreeMode = () => {
 };
 
 export default FreeMode;
+
