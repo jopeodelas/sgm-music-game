@@ -219,7 +219,7 @@ const Homepage = () => {
           <div
             className="blackTile"
             id="blackTile-4"
-            data-text="Play freely and explore the sounds!"
+            data-text="Play freely and record your sounds!"
             style={{ width: tileWidths[4] }}
             ref={tileRefs.current[4]}
             onMouseEnter={() => handleBlackTileHover(4)}
