@@ -16,7 +16,7 @@ const Homepage = () => {
   const [showVolumeControl, setShowVolumeControl] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isClickable, setIsClickable] = useState(false);
-
+  
   // State to manage the visibility of descriptions
   const [tileDescriptions, setTileDescriptions] = useState({
     1: false,
@@ -59,6 +59,10 @@ const Homepage = () => {
 
   const goToFreeMode = () => {
     navigate("/freemode");
+  };
+
+  const goToMelodyMimic = () => {
+    navigate("/melodymimic");
   };
 
   const toggleVolumeControl = () => {
@@ -155,6 +159,7 @@ const Homepage = () => {
             id="tile-2"
             onMouseEnter={() => handleWhiteTileHover(2)}
             onMouseLeave={() => handleWhiteTileLeave(2)}
+            onClick={goToMelodyMimic}
           >
             <div>
               <MelodyIcon className="icon" />

@@ -5,6 +5,7 @@ import ToneRunnerMenu from "./views/ToneRunnerMenu.js";
 import ToneRunner from "./views/ToneRunner.js";
 import ToneRunnerGameOverMenu from "./views/ToneRunnerGameOverMenu.js";
 import FreeMode from "./views/FreeMode.js";
+import MelodyMimic from "./views/MelodyMimic.js";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Route path="/tonerunner" element={<ToneRunner />} />
         <Route path="/tonerunnergameovermenu" element={<ToneRunnerGameOverMenu />} />
         <Route path="/freemode" element={<FreeMode />} />
+        <Route path="/melodymimic" element={<MelodyMimic />} />
       </Routes>
     </Router>
   );
