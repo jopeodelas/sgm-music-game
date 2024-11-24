@@ -10,8 +10,21 @@ import GobackBlack from "../assets/icons/Goback-freemode-black.svg";
 import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
 
 const SightTrainer = () => {
-  const [notes, setNotes] = useState([
-    "C4",
+  const [sheetNotes, setNotes] = useState([
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "A",
+    "B",
+    "c",
+    "d",
+    "e",
+    "f",
+  ]);
+
+  const notes = ["C4",
     "D4",
     "E4",
     "F4",
@@ -21,9 +34,21 @@ const SightTrainer = () => {
     "C5",
     "D5",
     "E5",
-    "F5",
-  ]);
+    "F5",]
 
+  const noteMap = {
+    C4: "C",
+    D4: "D",
+    E4: "E",
+    F4: "F",
+    G4: "G",
+    A4: "A",
+    B4: "B",
+    C5: "c",
+    D5: "d",
+    E5: "e",
+    F5: "f",
+  };
   const navigate = useNavigate();
   const mountRef = useRef(null);
   const [isDarkMode, setIsDarkMode] = useState(
@@ -172,6 +197,7 @@ const SightTrainer = () => {
       const { note, color } = key.userData;
 
       console.log(note)
+      removePlayedNote(note)
       // Iniciar o contexto de áudio
       if (Tone.context.state !== "running") {
         await Tone.start();
@@ -301,28 +327,45 @@ const SightTrainer = () => {
   }, [isDarkMode]);
 
   const generateRandomNote = () => {
-    const randomNote = notes[Math.floor(Math.random() * notes.length)]
+    const randomNote = sheetNotes[Math.floor(Math.random() * sheetNotes.length)]
     setNotes((prevNotes) => [...prevNotes, randomNote])
     return randomNote
   };
 
-  const renderNotes = () => {
-    let notas = []
-    for (let i = 0; i < 5; i++) {
-      const nota = generateRandomNote()
-      notas.push(nota)
-      console.log(nota)
-    };
-    const abcNotation = `X:1\nL:1/4\nK:C\n${notas.join(" ")}`;
-    ABCJS.renderAbc("sheet", abcNotation,{
-      staffwidth: 800,
-      scale: 2
-    });
-  };
+  let ind = 0
+  const [randomizedNotes, setRandomizedNotes] = useState([]);
 
+  const renderNotes = () => {
+    //control = false
+    while (ind<5) {
+      const note = generateRandomNote()
+      randomizedNotes.push(note)
+      console.log(note)
+      ind++
+    };
+    const abcNotation = `X:1\nL:1/4\nK:C\n${randomizedNotes.join(" ")}`;
+    ABCJS.renderAbc("sheet", abcNotation, {
+      staffwidth: 800,
+      scale: 2, 
+      
+    });
+  }
+
+  const removePlayedNote = (note) => {
+    const notePlayed = noteMap[note]
+    console.log(notePlayed + " " + randomizedNotes[0])
+    if (notePlayed == randomizedNotes[0] && randomizedNotes.length !== 0) {
+      randomizedNotes.shift();
+      console.log(randomizedNotes)
+    }
+    renderNotes()
+  }
+
+  //let control = true
   useEffect(() => {
-    renderNotes();
-    for (let i = 0; i < 5; i++) { generateRandomNote() }
+    //if (control) {
+      renderNotes();
+    //}
   }, []);
 
 
@@ -348,8 +391,8 @@ const style = {
     flexDirection: 'column',
     alignItems: 'center',
     top: "100px",
-    height:"200px",
-    width:"100%"
+    height: "200px",
+    width: "100%"
   }
 }
 
