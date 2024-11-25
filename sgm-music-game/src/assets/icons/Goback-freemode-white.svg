@@ -1,5 +1,11 @@
-<svg width="124" height="124" viewBox="0 0 124 124" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="62" cy="62" r="60.5" stroke="white" stroke-width="3"/>
-<path d="M53.5701 91.0273L19.9507 61.3664L54.565 32.8728L53.5701 91.0273Z" stroke="white" stroke-width="3"/>
-<path d="M94.5701 91.0273L60.9507 61.3664L95.565 32.8728L94.5701 91.0273Z" stroke="white" stroke-width="3"/>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
+<svg fill="#ffffff" height="800px" width="800px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 472.615 472.615" xml:space="preserve">
+
+<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+
+<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+
+<g id="SVGRepo_iconCarrier"> <g> <g> <polygon points="205.783,139.662 205.783,30.525 0,236.308 205.783,442.09 205.783,332.955 472.615,332.955 472.615,139.662 "/> </g> </g> </g>
+
 </svg>
