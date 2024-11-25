@@ -116,7 +116,7 @@ const Settings = ({ onVolumeChange, onClose, darkMode, onDarkModeToggle }) => {
 
   return (
     <>
-      <div id="overlay" onClick={onClose}></div>
+      <div id="overlay" style={{ zIndex: 3 }}></div>
       <div id="floatingWindow">
         <div id="settingsTop">
           <div>

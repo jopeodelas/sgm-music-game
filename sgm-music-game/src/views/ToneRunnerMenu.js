@@ -40,7 +40,7 @@ const ToneRunnerMenu = () => {
         audioRef.current.currentTime = 0; // Reseta o áudio ao início
       }
     };
-  }, []);
+  }, [volume]);
 
   // Atualiza o volume do áudio quando o volume mudar
   useEffect(() => {
@@ -59,14 +59,6 @@ const ToneRunnerMenu = () => {
     localStorage.setItem("darkMode", isDarkMode);
     document.body.className = isDarkMode ? "dark-body" : ""; // Aplica uma classe ao body
   }, [isDarkMode]);
-
-  const increaseVolume = () => {
-    setVolume((prevVolume) => Math.min(prevVolume + 10, 100));
-  };
-
-  const decreaseVolume = () => {
-    setVolume((prevVolume) => Math.max(prevVolume - 10, 0));
-  };
 
   const handleSettingsToggle = () => {
     setShowSettings(!showSettings);

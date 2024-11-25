@@ -1,23 +1,26 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import * as Tone from "tone";
-import Background from "../components/Background";
+// import Background from "../components/BackgroundThree";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import ReactDOM from "react-dom";
 import "../styles/FreeMode.css";
+import "../styles/Settings.css";
 
 // Importar os ícones
 import GobackBlack from "../assets/icons/Goback-freemode-black.svg";
 import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
 import CloudBlack from "../assets/icons/Cloud-freemode-black.svg";
 import CloudWhite from "../assets/icons/Cloud-freemode-white.svg";
-import RecordInicial from "../assets/icons/Record-freemode-inicial.svg";
-import RecordFinal from "../assets/icons/Record-freemode-final.svg";
+import RecordInicial from "../assets/icons/record.svg";
+import RecordFinal from "../assets/icons/stop.svg";
 import closeIcon from "../assets/icons/close2.svg";
 import playIcon from "../assets/icons/play.svg";
 import downloadIcon from "../assets/icons/download.svg";
-import shareIcon from "../assets/icons/share.svg";
+import SettingsIcon from "../assets/icons/settings.svg";
+import Settings from "../components/Settings";
+import settingsIconWhite from "../assets/icons/settings-white.svg";
 
 const FreeMode = () => {
   const navigate = useNavigate();
@@ -34,10 +37,57 @@ const FreeMode = () => {
   const [elapsedTime, setElapsedTime] = useState(1);
   const audioDestinationRef = useRef(null); // Referência para o destino de áudio
   const [recordFinishTime, setRecordFinishTime] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [volume, setVolume] = useState(
+    parseInt(localStorage.getItem("volume"), 10) || 50
+  );
+  const audioRef = useRef(null);
+
+  const handleSettingsToggle = () => {
+    setShowSettings(!showSettings);
+    const settingsIcon = document.getElementById("settingsIcon");
+    if (settingsIcon) {
+      settingsIcon.style.fill = isDarkMode ? "white" : "black";
+    }
+  };
 
   useEffect(() => {
     // Configuração básica da cena e da câmera
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(isDarkMode ? 0x000000 : 0xffffff);
+
+    const numStars = 5000;
+    const starsGeometry = new THREE.BufferGeometry();
+    const positions = [];
+    const colors = [];
+    const starMaterial = new THREE.PointsMaterial({
+      size: 2,
+      vertexColors: true,
+    });
+
+    // Generate random positions and colors for the stars
+    for (let i = 0; i < numStars; i++) {
+      positions.push(Math.random() * 2000 - 1000); // X
+      positions.push(Math.random() * 2000 - 1000); // Y
+      positions.push(Math.random() * 2000 - 1000); // Z
+
+      // Colors based on dark mode
+      const color = new THREE.Color(isDarkMode ? "white" : "black");
+      colors.push(color.r, color.g, color.b);
+    }
+
+    starsGeometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(positions, 3)
+    );
+    starsGeometry.setAttribute(
+      "color",
+      new THREE.Float32BufferAttribute(colors, 3)
+    );
+
+    const stars = new THREE.Points(starsGeometry, starMaterial);
+    scene.add(stars);
+
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -54,14 +104,6 @@ const FreeMode = () => {
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
-
-    // Adicionar o fundo à cena para que seja capturado na gravação
-    const backgroundTexture = new THREE.TextureLoader().load(
-      isDarkMode
-        ? "../assets/background-dark.png"
-        : "../assets/background-light.png"
-    );
-    scene.background = backgroundTexture;
 
     // Inicializar o sintetizador apenas uma vez
     const synth = new Tone.PolySynth(Tone.Synth, {
@@ -109,9 +151,9 @@ const FreeMode = () => {
       k: "C5",
       w: "C#4",
       e: "D#4",
-      r: "F#4",
-      t: "G#4",
-      y: "A#4",
+      t: "F#4",
+      y: "G#4",
+      u: "A#4",
     };
 
     // Criar teclas brancas
@@ -286,6 +328,10 @@ const FreeMode = () => {
 
     const animate = () => {
       requestAnimationFrame(animate);
+
+      stars.rotation.x += 0.0002;
+      stars.rotation.y += 0.0002;
+
       renderer.render(scene, camera);
     };
     animate();
@@ -380,6 +426,9 @@ const FreeMode = () => {
           width: "600px",
           maxHeight: "80vh",
           overflowY: "auto",
+          border: "4px solid #aaa",
+          borderRadius: "6px",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
         }}
       >
         <div
@@ -387,12 +436,13 @@ const FreeMode = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            marginTop: "-20px",
           }}
         >
           <img
             src={CloudBlack}
             alt="Cloud"
-            style={{ width: "50px", height: "50px", marginRight: "10px" }}
+            style={{ width: "35px", height: "35px", marginRight: "15px" }}
           />
           <h1>Saved Recordings</h1>
         </div>
@@ -410,6 +460,7 @@ const FreeMode = () => {
             position: "absolute",
             top: "10px",
             right: "10px",
+            cursor: "pointer",
           }}
         ></img>
         <div>
@@ -459,16 +510,6 @@ const FreeMode = () => {
                     style={{
                       width: "40px",
                       height: "40px",
-                      cursor: "pointer",
-                      marginLeft: "10px",
-                    }}
-                  ></img>
-                  <img
-                    src={shareIcon}
-                    alt="Share"
-                    style={{
-                      width: "30px",
-                      height: "30px",
                       cursor: "pointer",
                       marginLeft: "10px",
                     }}
@@ -532,17 +573,30 @@ const FreeMode = () => {
           right: "10px",
           zIndex: 1,
         }}
-        onClick={showCloudRecordings}
       >
         <img
           src={isDarkMode ? CloudWhite : CloudBlack}
           alt="Cloud"
           style={{
-            width: "125px",
-            height: "125px",
+            width: "75px",
+            height: "75px",
+            marginRight: "20px",
+            marginTop: "20px",
+            cursor: "pointer",
+          }}
+          onClick={showCloudRecordings}
+        />
+        <img
+          id="settingsIcon"
+          style={{
+            width: "75px",
+            height: "75px",
             marginRight: "20px",
             marginTop: "20px",
           }}
+          alt="Settings"
+          src={isDarkMode ? settingsIconWhite : SettingsIcon}
+          onClick={handleSettingsToggle}
         />
       </div>
       <div
@@ -558,7 +612,11 @@ const FreeMode = () => {
         <img
           src={isRecording ? RecordFinal : RecordInicial}
           alt="Record"
-          style={{ width: "100px", height: "100px" }}
+          style={{
+            width: "100px",
+            height: "100px",
+            transform: !isRecording ? "scale(0.8)" : "none",
+          }}
         />
       </div>
       {isRecording && (
@@ -576,7 +634,6 @@ const FreeMode = () => {
           {`0:${elapsedTime < 10 ? "0" : ""}${elapsedTime}`}
         </div>
       )}
-      <Background darkMode={isDarkMode} />
       <div
         ref={mountRef}
         style={{
@@ -587,6 +644,13 @@ const FreeMode = () => {
           height: "100%",
         }}
       />
+      {showSettings && (
+        <Settings
+          onClose={handleSettingsToggle}
+          darkMode={isDarkMode}
+          onDarkModeToggle={() => setIsDarkMode(!isDarkMode)}
+        />
+      )}
     </div>
   );
 };

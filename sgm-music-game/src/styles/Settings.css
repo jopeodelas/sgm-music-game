@@ -176,9 +176,16 @@
 }
 
 input:checked + .slider {
-  background-color: #aaa;
+  background-color: #fff;
 }
 
 input:checked + .slider:before {
   transform: translateX(24px);
+}
+
+.darkMode {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 10px;
 }
