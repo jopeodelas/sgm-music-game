@@ -8,6 +8,7 @@ import {
   FreeModeIcon,
   SettingsIcon,
   MelodyIcon,
+  ClefIcon,
 } from "../assets/icons/index.js";
 import Background from "../components/Background.js";
 
@@ -53,6 +54,9 @@ const Homepage = () => {
     }
   }, []);
 
+  const goToSightTrainer = () => {
+    navigate("/sighttrainer");
+  };
   const goToToneRunner = () => {
     navigate("/tonerunnermenu");
   };
@@ -133,16 +137,17 @@ const Homepage = () => {
             id="tile-1"
             onMouseEnter={() => handleWhiteTileHover(1)}
             onMouseLeave={() => handleWhiteTileLeave(1)}
+            onClick={goToSightTrainer}
           >
             <div>
-              <AudioQuizIcon className="icon" />
-              <span className="tileText">Audio Quiz</span>
+              <ClefIcon className="icon" />
+              <span className="tileText">SightTrainer</span>
             </div>
           </div>
           <div
             className="blackTile"
             id="blackTile-1"
-            data-text="Guess the audio and identify the sound!"
+            data-text="Test your Sight Reading!"
             style={{ width: tileWidths[1] }}
             ref={tileRefs.current[1]}
             onMouseEnter={() => handleBlackTileHover(1)}

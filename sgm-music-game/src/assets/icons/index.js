@@ -6,3 +6,4 @@ export { ReactComponent as MelodyIcon } from './melody.svg';
 export { ReactComponent as CloseIcon } from './close.svg';
 export { ReactComponent as SubtractIcon } from './subtract.svg';
 export { ReactComponent as AddIcon } from './add.svg';
+export { ReactComponent as ClefIcon } from './ClefIcon.svg';
