@@ -8,8 +8,11 @@ import ABCJS from "abcjs";
 // Importar os ícones
 import GobackBlack from "../assets/icons/Goback-freemode-black.svg";
 import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
+import Heart from "../assets/icons/heart.svg";
 
 const SightTrainer = () => {
+  let vidas = 3
+
   const [sheetNotes, setNotes] = useState([
     "C",
     "D",
@@ -333,11 +336,13 @@ const SightTrainer = () => {
   };
 
   let ind = 0
-  const [randomizedNotes, setRandomizedNotes] = useState([]);
+  const [randomizedNotes] = useState([]);
+  const [lives, setLives] = useState(3)
+  const lifes = useRef(null)
 
   const renderNotes = () => {
     //control = false
-    while (ind<5) {
+    while (ind < 10) {
       const note = generateRandomNote()
       randomizedNotes.push(note)
       console.log(note)
@@ -346,25 +351,31 @@ const SightTrainer = () => {
     const abcNotation = `X:1\nL:1/4\nK:C\n${randomizedNotes.join(" ")}`;
     ABCJS.renderAbc("sheet", abcNotation, {
       staffwidth: 800,
-      scale: 2, 
-      
+      scale: 2,
     });
   }
 
   const removePlayedNote = (note) => {
-    const notePlayed = noteMap[note]
-    console.log(notePlayed + " " + randomizedNotes[0])
-    if (notePlayed == randomizedNotes[0] && randomizedNotes.length !== 0) {
-      randomizedNotes.shift();
-      console.log(randomizedNotes)
+    if (randomizedNotes.length !== 0) {
+      const notePlayed = noteMap[note]
+      console.log(notePlayed + " " + randomizedNotes[0])
+      if (notePlayed == randomizedNotes[0]) {
+        randomizedNotes.shift();
+        console.log(randomizedNotes)
+
+      }
+      else {
+        setLives((prevLives) => Math.max(prevLives - 1, 0));
+        console.log(lives)
+      }
+      renderNotes()
     }
-    renderNotes()
   }
 
   //let control = true
   useEffect(() => {
     //if (control) {
-      renderNotes();
+    renderNotes();
     //}
   }, []);
 
@@ -375,6 +386,19 @@ const SightTrainer = () => {
         {/* Ícones */}
         <div style={{ position: "absolute", top: "10px", left: "10px", zIndex: 1, }} onClick={() => navigate("/")}>
           <img src={isDarkMode ? GobackWhite : GobackBlack} alt="Go Back" style={{ width: "100px", height: "100px" }} />
+        </div>
+        <div style={style.lifes} ref={lifes}>
+          {Array.from({ length: lives }).map((_, index) => (
+            <img
+              key={index}
+              src={Heart} // Image for a full heart
+              alt={`Heart ${index + 1}`}
+              style={{
+                width: "50px",
+                height: "50px",
+              }}
+            />
+          ))}
         </div>
         <Background darkMode={isDarkMode} />
         <div id="sheet" style={style.sheet} />
@@ -393,6 +417,11 @@ const style = {
     top: "100px",
     height: "200px",
     width: "100%"
+  },
+
+  lifes: {
+    marginLeft:'89%',
+    position:'absolute'
   }
 }
 

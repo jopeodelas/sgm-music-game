@@ -6,6 +6,7 @@ import ToneRunner from "./views/ToneRunner.js";
 import ToneRunnerGameOverMenu from "./views/ToneRunnerGameOverMenu.js";
 import FreeMode from "./views/FreeMode.js";
 import MelodyMimic from "./views/MelodyMimic.js";
+import SightTrainer from "./views/SightTrainer.js";
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/tonerunnergameovermenu" element={<ToneRunnerGameOverMenu />} />
         <Route path="/freemode" element={<FreeMode />} />
         <Route path="/melodymimic" element={<MelodyMimic />} />
+        <Route path="/sighttrainer" element={<SightTrainer />} />
       </Routes>
     </Router>
   );
