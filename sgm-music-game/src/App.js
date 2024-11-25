@@ -14,7 +14,10 @@ const App = () => {
         <Route path="/" element={<Homepage />} />
         <Route path="/tonerunnermenu" element={<ToneRunnerMenu />} />
         <Route path="/tonerunner" element={<ToneRunner />} />
-        <Route path="/tonerunnergameovermenu" element={<ToneRunnerGameOverMenu />} />
+        <Route
+          path="/tonerunnergameovermenu"
+          element={<ToneRunnerGameOverMenu />}
+        />
         <Route path="/freemode" element={<FreeMode />} />
         <Route path="/melodymimic" element={<MelodyMimic />} />
       </Routes>
