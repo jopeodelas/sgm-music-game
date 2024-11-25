@@ -3,16 +3,10 @@ import * as THREE from "three";
 import * as Tone from "tone";
 import Background from "../components/Background";
 import { useNavigate } from "react-router-dom";
-import { saveAs } from "file-saver";
-import ReactDOM from 'react-dom';
 
 // Importar os ícones
 import GobackBlack from "../assets/icons/Goback-freemode-black.svg";
 import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
-import CloudBlack from "../assets/icons/Cloud-freemode-black.svg";
-import CloudWhite from "../assets/icons/Cloud-freemode-white.svg";
-import RecordInicial from "../assets/icons/Record-freemode-inicial.svg";
-import RecordFinal from "../assets/icons/Record-freemode-final.svg";
 
 const MelodyMimic = () => { 
     const navigate = useNavigate();
@@ -20,24 +14,15 @@ const MelodyMimic = () => {
     const [isDarkMode, setIsDarkMode] = useState(
       localStorage.getItem("darkMode") === "true"
     );
-    const [isRecording, setIsRecording] = useState(false); // Controle do estado de gravação
-    const [recordings, setRecordings] = useState([]); // Lista de gravações
-    const [recordStartTime, setRecordStartTime] = useState(null);
-    const mediaRecorderRef = useRef(null);
-    const chunksRef = useRef([]);
-    const timerRef = useRef(null);
-    const [elapsedTime, setElapsedTime] = useState(0);
-    const audioDestinationRef = useRef(null); // Referência para o destino de áudio
-  
+    
+    const [notaRandom, setnotaRandom] = useState('');
+
+    const notas = ["C4","D4","E4","F4","G4","A4","B4", "C5","D5","E5", "F5", "C#4","D#4","F#4","G#4","A#4","C#5","D#5"];
+    
     useEffect(() => {
       // Configuração básica da cena e da câmera
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
+      const camera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);
       camera.position.set(0, 0, 6);
   
       const renderer = new THREE.WebGLRenderer({ alpha: true });
@@ -67,10 +52,6 @@ const MelodyMimic = () => {
       const volumeSetting = parseInt(localStorage.getItem("volume"), 10) || 50;
       synth.volume.value = Tone.gainToDb(volumeSetting / 100);
   
-      // Criar um MediaStreamDestination e conectar ao sintetizador para capturar áudio
-      const audioDestination = Tone.context.createMediaStreamDestination();
-      synth.connect(audioDestination);
-      audioDestinationRef.current = audioDestination; // Armazenar referência no ref
       const noteColors = {
         C4: 0xff0000,
         D4: 0x00ff00,
@@ -91,6 +72,7 @@ const MelodyMimic = () => {
         "D#5": 0x9acd32,
         F5: 0x93f043,
       };
+
       const keyMap = {
         a: "C4",
         s: "D4",
@@ -170,8 +152,7 @@ const MelodyMimic = () => {
             blackKeyMaterial.clone()
           );
           blackKey.position.x =
-            offset * (keyWidth + 0.1) -
-            ((notes.length - 1) * (keyWidth + 0.1)) / 2;
+            offset * (keyWidth + 0.1) - ((notes.length - 1) * (keyWidth + 0.1)) / 2; 
           blackKey.position.y = -1.9;
           blackKey.position.z = 2;
           blackKey.userData = {
@@ -199,12 +180,6 @@ const MelodyMimic = () => {
   
         synth.triggerAttack(note, undefined, 0.8); // Volume inicial a 80%
         key.material.color.setHex(color);
-      };
-  
-      const releaseNote = (key) => {
-        const { note } = key.userData;
-        synth.triggerRelease(note);
-        key.material.color.setHex(whiteKeys.includes(key) ? 0xffffff : 0x000000);
       };
   
       // Detectar cliques e teclado
@@ -296,17 +271,81 @@ const MelodyMimic = () => {
         synth.triggerRelease(note);
         key.material.color.setHex(whiteKeys.includes(key) ? 0xffffff : 0x000000);
       };
-  
+      
+      var notes = [];
+      
+      const createNotes = (random) => {
+        if (random <= 10){
+          const noteShape =  new THREE.BoxGeometry(0.55,1.3,0);
+          const noteMaterial = new THREE.MeshBasicMaterial({
+            color: noteColors[notas[random]],
+            side: THREE.DoubleSide
+          });
+          const nota = new THREE.Mesh(noteShape, noteMaterial);  
+          const x = random * (0.55 + 0.1) - (10 * (0.55 + 0.1)) / 2;
+          nota.position.set(x, 5, 0.87); // y = 3
+          scene.add(nota);
+          notes.push(nota);
+        } else {
+          const noteShape =  new THREE.BoxGeometry(0.30,1.3,0); // y = 1.3
+          const noteMaterial = new THREE.MeshBasicMaterial({
+            color: noteColors[notas[random]],
+            side: THREE.DoubleSide
+          })
+          var x = 0;
+          
+          if (random > 10 && random <= 12) {
+            x = (random - 10.25) * (0.55 + 0.1) - ((9) * (0.4)) / 2; //offsett * (keyWidth + 0.1) - ((notes.length - 1) * (keyWidth + 0.1)) / 2;
+          } else if (random > 12 && random <= 15) {
+              x = (random - 9.75) * (0.55 + 0.1) - ((10 - 1) * (0.30 + 0.1)) / 2;
+            } else {
+                x = (random - 8.75) * (0.55 + 0.1) - ((10 - 1) * (0.30 + 0.1)) / 2;
+            }
+          x = x - 1.45;
+          const nota = new THREE.Mesh(noteShape, noteMaterial); 
+          nota.position.set(x, 5, 1.4);
+          
+        scene.add(nota);
+        notes.push(nota);
+        console.log("Generated Note");
+        console.log(notes);
+        }
+      }
+
+
+      const generateNotes = () => {
+        if (notes.length < 200) {
+          const random = Math.floor(Math.random() * notas.length);
+          setnotaRandom(notas[random]);
+          createNotes(random);
+        }
+      };
+
+
+
       window.addEventListener("mousedown", onMouseDown);
       window.addEventListener("mousemove", onMouseMove);
       window.addEventListener("mouseup", onMouseUp);
       window.addEventListener("keydown", handleKeyPress);
       window.addEventListener("keyup", handleKeyRelease);
-  
+      
+      const noteSpeed = -0.015;
+      const a = new THREE.Vector3( 0, noteSpeed, 0 );
+
+      const notesInterval = setInterval(generateNotes, (noteSpeed * -750000));
+
       const animate = () => {
         requestAnimationFrame(animate);
+        notes.forEach((note) => {
+            note.position.add(a);
+            if (note.position.y < -2.5) {
+              scene.remove(note);
+            }
+        });
+
         renderer.render(scene, camera);
       };
+
       animate();
   
       return () => {
@@ -320,15 +359,16 @@ const MelodyMimic = () => {
     }, [isDarkMode]);
   
     return (
-    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+    <div style={{ position: "relative", height: "100vh" }}>
         {/* Ícones */}
         <div style={{ position: "absolute", top: "10px", left: "10px", zIndex: 1,}} onClick={() => navigate("/")}>
           <img src={isDarkMode ? GobackWhite : GobackBlack} alt="Go Back" style={{ width: "100px", height: "100px" }}/>
         </div> 
         
-        <div>
-            <h1>PRESS THE FOLLOWING KEY:</h1>
+        <div style={{width:'100%', position: "absolute", textAlign: 'center', display: 'flex', justifyContent: 'center', marginTop:'1%' }}>
+            <h1>PRESS THE FOLLOWING KEY: <br/> <b style={{fontSize:'300%'}}> {notaRandom} </b></h1>
         </div>
+
         <Background darkMode={isDarkMode} />
 
         <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
