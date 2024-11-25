@@ -11,7 +11,10 @@ import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
 import Heart from "../assets/icons/heart.svg";
 
 const SightTrainer = () => {
-  let vidas = 3
+  const [randomizedNotes] = useState([]);
+  const [lives, setLives] = useState(3)
+  let [score, setScore] = useState(0)
+  const lifes = useRef(null)
 
   const [sheetNotes, setNotes] = useState([
     "C",
@@ -200,7 +203,7 @@ const SightTrainer = () => {
       const { note, color } = key.userData;
 
       console.log(note)
-      removePlayedNote(note)
+      checkAnswer(note)
       // Iniciar o contexto de áudio
       if (Tone.context.state !== "running") {
         await Tone.start();
@@ -336,12 +339,8 @@ const SightTrainer = () => {
   };
 
   let ind = 0
-  const [randomizedNotes] = useState([]);
-  const [lives, setLives] = useState(3)
-  const lifes = useRef(null)
 
   const renderNotes = () => {
-    //control = false
     while (ind < 10) {
       const note = generateRandomNote()
       randomizedNotes.push(note)
@@ -352,31 +351,30 @@ const SightTrainer = () => {
     ABCJS.renderAbc("sheet", abcNotation, {
       staffwidth: 800,
       scale: 2,
+
     });
   }
 
-  const removePlayedNote = (note) => {
+
+  const checkAnswer = (note) => {
     if (randomizedNotes.length !== 0) {
       const notePlayed = noteMap[note]
       console.log(notePlayed + " " + randomizedNotes[0])
       if (notePlayed == randomizedNotes[0]) {
         randomizedNotes.shift();
         console.log(randomizedNotes)
+        setScore((prev) => prev + 10)
 
       }
       else {
         setLives((prevLives) => Math.max(prevLives - 1, 0));
-        console.log(lives)
       }
       renderNotes()
     }
   }
 
-  //let control = true
   useEffect(() => {
-    //if (control) {
     renderNotes();
-    //}
   }, []);
 
 
@@ -399,9 +397,21 @@ const SightTrainer = () => {
               }}
             />
           ))}
+          <h3>Score: {score}</h3>
         </div>
         <Background darkMode={isDarkMode} />
-        <div id="sheet" style={style.sheet} />
+        <div id="sheet" style={
+          {
+            position: "relative",
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            top: "100px",
+            height: "200px",
+            width: "100%",
+            color: isDarkMode ? "#ffffff" : "#000000"
+          }
+        } />
         <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
       </div>
     </>
@@ -410,18 +420,12 @@ const SightTrainer = () => {
 
 const style = {
   sheet: {
-    position: "relative",
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    top: "100px",
-    height: "200px",
-    width: "100%"
+
   },
 
   lifes: {
-    marginLeft:'89%',
-    position:'absolute'
+    marginLeft: '89%',
+    position: 'absolute'
   }
 }
 
