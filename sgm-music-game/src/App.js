@@ -8,6 +8,7 @@ import FreeMode from "./views/FreeMode.js";
 import MelodyMimic from "./views/MelodyMimic.js";
 import SightTrainer from "./views/SightTrainer.js";
 import GameOver from "./views/GameOver.js";
+import GameOverMM from "./views/GameOverMM.js";
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/melodymimic" element={<MelodyMimic />} />
         <Route path="/sighttrainer" element={<SightTrainer />} />
         <Route path="/gameover" element={<GameOver />} />
+        <Route path="/gameovermm" element={<GameOverMM />} />
       </Routes>
     </Router>
   );

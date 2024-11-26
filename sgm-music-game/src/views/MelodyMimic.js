@@ -16,6 +16,9 @@ const MelodyMimic = () => {
       localStorage.getItem("darkMode") === "true"
     );
     
+    
+    const [score, setScore] = useState(0);
+
     const [notaRandom, setnotaRandom] = useState('');
 
     const notas = ["C4","D4","E4","F4","G4","A4","B4", "C5","D5","E5", "F5", "C#4","D#4","F#4","G#4","A#4","C#5","D#5"];
@@ -345,10 +348,18 @@ const MelodyMimic = () => {
             if (note.position.y < -2.425) {  
               if(currentKey){
                 if(currentKey.userData.note == note.notaRand) {
-                  console.log('Boa');
+                  setScore((prev) => prev + 10)
                 }
                 else if (currentKey.userData.note != note.notaRand){
-                  setLives((prevLives) => Math.max(prevLives - 1, 0));
+                  setLives((prevLives) => {
+                    if (prevLives === 1) {
+                      console.log("SCORE: "+score)
+                      setCheck((check) => !check)
+                      console.log(check)
+                      return prevLives;
+                    } else {
+                      return prevLives - 1;
+                    }});
                 }
               }
 
@@ -374,6 +385,7 @@ const MelodyMimic = () => {
 
     const [lives, setLives] = useState(3);
     const lifes = useRef(null);
+    const [check, setCheck] = useState(false)
 
     return (
     <div style={{ position: "relative", height: "100vh" }}>
@@ -389,10 +401,13 @@ const MelodyMimic = () => {
         <Background darkMode={isDarkMode} />
 
         <div style={{marginLeft:'89%',position:'absolute'}} ref={lifes}>
-          {Array.from({ length: lives }).map((_, index) => (
-            <img key={index} src={Heart} alt={`Heart ${index + 1}`}style={{width: "50px", height: "50px",}}
+        {Array.from({ length: lives }).map((_, index) => (
+            check ? navigate("/gameover", { state: { score } }) : 
+            <img key={index} src={Heart} alt={`Heart ${index + 1}`} style={{width: "50px",height: "50px",}}
             />
-          ))}
+          ))
+          }
+          <h3 style={{ color: isDarkMode ? "white" : "black" }}>Score: {score}</h3>
         </div>
 
         <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
