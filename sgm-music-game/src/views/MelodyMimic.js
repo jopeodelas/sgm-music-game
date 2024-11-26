@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 // Importar os ícones
 import GobackBlack from "../assets/icons/Goback-freemode-black.svg";
 import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
+import Heart from "../assets/icons/heart.svg";
 
 const MelodyMimic = () => { 
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ const MelodyMimic = () => {
     const [notaRandom, setnotaRandom] = useState('');
 
     const notas = ["C4","D4","E4","F4","G4","A4","B4", "C5","D5","E5", "F5", "C#4","D#4","F#4","G#4","A#4","C#5","D#5"];
-    
+
     useEffect(() => {
       // Configuração básica da cena e da câmera
       const scene = new THREE.Scene();
@@ -283,9 +284,12 @@ const MelodyMimic = () => {
           });
           const nota = new THREE.Mesh(noteShape, noteMaterial);  
           const x = random * (0.55 + 0.1) - (10 * (0.55 + 0.1)) / 2;
-          nota.position.set(x, 5, 0.87); // y = 3
+          nota.position.set(x, 5, 0.87); // y = 3 
+          var notaRand = notas[random];         
+          Object.assign(nota, {notaRand});
           scene.add(nota);
           notes.push(nota);
+
         } else {
           const noteShape =  new THREE.BoxGeometry(0.30,1.3,0); // y = 1.3
           const noteMaterial = new THREE.MeshBasicMaterial({
@@ -304,11 +308,10 @@ const MelodyMimic = () => {
           x = x - 1.45;
           const nota = new THREE.Mesh(noteShape, noteMaterial); 
           nota.position.set(x, 5, 1.4);
-          
-        scene.add(nota);
-        notes.push(nota);
-        console.log("Generated Note");
-        console.log(notes);
+          var notaRand = notas[random];         
+          Object.assign(nota, {notaRand});
+          scene.add(nota);
+          notes.push(nota);
         }
       }
 
@@ -321,7 +324,7 @@ const MelodyMimic = () => {
         }
       };
 
-
+     
 
       window.addEventListener("mousedown", onMouseDown);
       window.addEventListener("mousemove", onMouseMove);
@@ -337,12 +340,23 @@ const MelodyMimic = () => {
       const animate = () => {
         requestAnimationFrame(animate);
         notes.forEach((note) => {
-            note.position.add(a);
-            if (note.position.y < -2.5) {
+            note.position.add(a); 
+
+            if (note.position.y < -2.425) {  
+              if(currentKey){
+                if(currentKey.userData.note == note.notaRand) {
+                  console.log('Boa');
+                }
+                else if (currentKey.userData.note != note.notaRand){
+                  setLives((prevLives) => Math.max(prevLives - 1, 0));
+                }
+              }
+
+              notes.shift();
               scene.remove(note);
             }
-        });
 
+        });
         renderer.render(scene, camera);
       };
 
@@ -357,7 +371,10 @@ const MelodyMimic = () => {
         mountNode.removeChild(renderer.domElement);
       };
     }, [isDarkMode]);
-  
+
+    const [lives, setLives] = useState(3);
+    const lifes = useRef(null);
+
     return (
     <div style={{ position: "relative", height: "100vh" }}>
         {/* Ícones */}
@@ -365,11 +382,18 @@ const MelodyMimic = () => {
           <img src={isDarkMode ? GobackWhite : GobackBlack} alt="Go Back" style={{ width: "100px", height: "100px" }}/>
         </div> 
         
-        <div style={{width:'100%', position: "absolute", textAlign: 'center', display: 'flex', justifyContent: 'center', marginTop:'1%' }}>
+        <div style={{width:'100%', position: "absolute", textAlign: 'center', display: 'flex', justifyContent: 'center', marginTop:'1%', color: isDarkMode ? "white" : "black"}}>
             <h1>PRESS THE FOLLOWING KEY: <br/> <b style={{fontSize:'300%'}}> {notaRandom} </b></h1>
         </div>
 
         <Background darkMode={isDarkMode} />
+
+        <div style={{marginLeft:'89%',position:'absolute'}} ref={lifes}>
+          {Array.from({ length: lives }).map((_, index) => (
+            <img key={index} src={Heart} alt={`Heart ${index + 1}`}style={{width: "50px", height: "50px",}}
+            />
+          ))}
+        </div>
 
         <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
     </div>
