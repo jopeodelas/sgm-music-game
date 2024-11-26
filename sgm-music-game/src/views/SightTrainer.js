@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import * as THREE from "three";
 import * as Tone from "tone";
 import Background from "../components/Background";
@@ -11,7 +12,11 @@ import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
 import Heart from "../assets/icons/heart.svg";
 
 const SightTrainer = () => {
-  let vidas = 3
+  const location = useLocation();
+  const [randomizedNotes] = useState([]);
+  const [lives, setLives] = useState(3)
+  const [score, setScore] = useState(0);
+  const lifes = useRef(null)
 
   const [sheetNotes, setNotes] = useState([
     "C",
@@ -200,7 +205,7 @@ const SightTrainer = () => {
       const { note, color } = key.userData;
 
       console.log(note)
-      removePlayedNote(note)
+      checkAnswer(note)
       // Iniciar o contexto de áudio
       if (Tone.context.state !== "running") {
         await Tone.start();
@@ -335,48 +340,47 @@ const SightTrainer = () => {
     return randomNote
   };
 
-  let ind = 0
-  const [randomizedNotes] = useState([]);
-  const [lives, setLives] = useState(3)
-  const lifes = useRef(null)
 
   const renderNotes = () => {
-    //control = false
-    while (ind < 10) {
-      const note = generateRandomNote()
-      randomizedNotes.push(note)
-      console.log(note)
-      ind++
-    };
+    const note = generateRandomNote()
+    randomizedNotes.push(note)
+    console.log(note)
     const abcNotation = `X:1\nL:1/4\nK:C\n${randomizedNotes.join(" ")}`;
     ABCJS.renderAbc("sheet", abcNotation, {
       staffwidth: 800,
       scale: 2,
+
     });
   }
 
-  const removePlayedNote = (note) => {
+  const [check, setCheck] = useState(false)
+  const checkAnswer = (note) => {
     if (randomizedNotes.length !== 0) {
       const notePlayed = noteMap[note]
       console.log(notePlayed + " " + randomizedNotes[0])
       if (notePlayed == randomizedNotes[0]) {
         randomizedNotes.shift();
         console.log(randomizedNotes)
-
+        setScore((prev) => prev + 10)
       }
       else {
-        setLives((prevLives) => Math.max(prevLives - 1, 0));
-        console.log(lives)
+        setLives((prevLives) => {
+          if (prevLives === 1) {
+            console.log("SCORE: "+score)
+            setCheck((check) => !check)
+            console.log(check)
+            return prevLives;
+          } else {
+            return prevLives - 1;
+          }
+        });
       }
       renderNotes()
     }
   }
 
-  //let control = true
   useEffect(() => {
-    //if (control) {
-    renderNotes();
-    //}
+    for (let i = 0; i < 5; i++) renderNotes();
   }, []);
 
 
@@ -389,19 +393,33 @@ const SightTrainer = () => {
         </div>
         <div style={style.lifes} ref={lifes}>
           {Array.from({ length: lives }).map((_, index) => (
+            check ? navigate("/gameover", { state: { score } }) : 
             <img
               key={index}
-              src={Heart} // Image for a full heart
+              src={Heart}
               alt={`Heart ${index + 1}`}
               style={{
                 width: "50px",
                 height: "50px",
               }}
             />
-          ))}
+          ))
+          }
+          <h3 style={{ color: isDarkMode ? "#ffffff" : "#000000" }}>Score: {score}</h3>
         </div>
         <Background darkMode={isDarkMode} />
-        <div id="sheet" style={style.sheet} />
+        <div id="sheet" style={
+          {
+            position: "relative",
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            top: "100px",
+            height: "200px",
+            width: "100%",
+            color: isDarkMode ? "#ffffff" : "#000000"
+          }
+        } />
         <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
       </div>
     </>
@@ -409,19 +427,9 @@ const SightTrainer = () => {
 };
 
 const style = {
-  sheet: {
-    position: "relative",
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    top: "100px",
-    height: "200px",
-    width: "100%"
-  },
-
   lifes: {
-    marginLeft:'89%',
-    position:'absolute'
+    marginLeft: '89%',
+    position: 'absolute'
   }
 }
 
