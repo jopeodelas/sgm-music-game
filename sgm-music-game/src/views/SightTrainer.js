@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import * as THREE from "three";
 import * as Tone from "tone";
 import Background from "../components/Background";
@@ -11,9 +12,10 @@ import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
 import Heart from "../assets/icons/heart.svg";
 
 const SightTrainer = () => {
+  const location = useLocation();
   const [randomizedNotes] = useState([]);
   const [lives, setLives] = useState(3)
-  let [score, setScore] = useState(0)
+  const [score, setScore] = useState(0);
   const lifes = useRef(null)
 
   const [sheetNotes, setNotes] = useState([
@@ -338,15 +340,11 @@ const SightTrainer = () => {
     return randomNote
   };
 
-  let ind = 0
 
   const renderNotes = () => {
-    while (ind < 10) {
-      const note = generateRandomNote()
-      randomizedNotes.push(note)
-      console.log(note)
-      ind++
-    };
+    const note = generateRandomNote()
+    randomizedNotes.push(note)
+    console.log(note)
     const abcNotation = `X:1\nL:1/4\nK:C\n${randomizedNotes.join(" ")}`;
     ABCJS.renderAbc("sheet", abcNotation, {
       staffwidth: 800,
@@ -355,7 +353,7 @@ const SightTrainer = () => {
     });
   }
 
-
+  const [check, setCheck] = useState(false)
   const checkAnswer = (note) => {
     if (randomizedNotes.length !== 0) {
       const notePlayed = noteMap[note]
@@ -364,17 +362,25 @@ const SightTrainer = () => {
         randomizedNotes.shift();
         console.log(randomizedNotes)
         setScore((prev) => prev + 10)
-
       }
       else {
-        setLives((prevLives) => Math.max(prevLives - 1, 0));
+        setLives((prevLives) => {
+          if (prevLives === 1) {
+            console.log("SCORE: "+score)
+            setCheck((check) => !check)
+            console.log(check)
+            return prevLives;
+          } else {
+            return prevLives - 1;
+          }
+        });
       }
       renderNotes()
     }
   }
 
   useEffect(() => {
-    renderNotes();
+    for (let i = 0; i < 5; i++) renderNotes();
   }, []);
 
 
@@ -387,17 +393,19 @@ const SightTrainer = () => {
         </div>
         <div style={style.lifes} ref={lifes}>
           {Array.from({ length: lives }).map((_, index) => (
+            check ? navigate("/gameover", { state: { score } }) : 
             <img
               key={index}
-              src={Heart} // Image for a full heart
+              src={Heart}
               alt={`Heart ${index + 1}`}
               style={{
                 width: "50px",
                 height: "50px",
               }}
             />
-          ))}
-          <h3>Score: {score}</h3>
+          ))
+          }
+          <h3 style={{ color: isDarkMode ? "#ffffff" : "#000000" }}>Score: {score}</h3>
         </div>
         <Background darkMode={isDarkMode} />
         <div id="sheet" style={
@@ -419,10 +427,6 @@ const SightTrainer = () => {
 };
 
 const style = {
-  sheet: {
-
-  },
-
   lifes: {
     marginLeft: '89%',
     position: 'absolute'
