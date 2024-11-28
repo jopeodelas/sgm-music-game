@@ -5,18 +5,26 @@ import * as Tone from "tone";
 import Background from "../components/Background";
 import { useNavigate } from "react-router-dom";
 import ABCJS from "abcjs";
+import "../styles/Settings.css";
 
 // Importar os ícones
 import GobackBlack from "../assets/icons/Goback-freemode-black.svg";
 import GobackWhite from "../assets/icons/Goback-freemode-white.svg";
 import Heart from "../assets/icons/heart.svg";
+import SettingsIcon from "../assets/icons/settings.svg";
+import Settings from "../components/Settings";
+import settingsIconWhite from "../assets/icons/settings-white.svg";
 
 const SightTrainer = () => {
   const location = useLocation();
   const [randomizedNotes] = useState([]);
   const [lives, setLives] = useState(3)
   const [score, setScore] = useState(0);
-  const lifes = useRef(null)
+  const lifes = useRef(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [volume, setVolume] = useState(
+    parseInt(localStorage.getItem("volume"), 10) || 50
+  );
 
   const [sheetNotes, setNotes] = useState([
     "C",
@@ -62,6 +70,16 @@ const SightTrainer = () => {
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "true"
   );
+
+
+  const handleSettingsToggle = () => {
+    setShowSettings(!showSettings);
+    const settingsIcon = document.getElementById("settingsIcon");
+    if (settingsIcon) {
+      settingsIcon.style.fill = isDarkMode ? "white" : "black";
+    }
+  };
+
 
   useEffect(() => {
     // Configuração básica da cena e da câmera
@@ -366,7 +384,7 @@ const SightTrainer = () => {
       else {
         setLives((prevLives) => {
           if (prevLives === 1) {
-            console.log("SCORE: "+score)
+            console.log("SCORE: " + score)
             setCheck((check) => !check)
             console.log(check)
             return prevLives;
@@ -379,58 +397,80 @@ const SightTrainer = () => {
     }
   }
 
+
   useEffect(() => {
     for (let i = 0; i < 5; i++) renderNotes();
   }, []);
 
-
   return (
     <>
-      <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-        {/* Ícones */}
-        <div style={{ position: "absolute", top: "10px", left: "10px", zIndex: 1, }} onClick={() => navigate("/")}>
-          <img src={isDarkMode ? GobackWhite : GobackBlack} alt="Go Back" style={{ width: "100px", height: "100px" }} />
-        </div>
-        <div style={style.lifes} ref={lifes}>
+      {/* Ícones */}
+      <div style={{ position: "absolute", top: "10px", left: "10px", zIndex: 1, }} onClick={() => navigate("/")}>
+        <img src={isDarkMode ? GobackWhite : GobackBlack} alt="Go Back" style={{ width: "100px", height: "100px" }} />
+      </div>
+      <div style={style.lifes} ref={lifes}>
+        <img
+          id="settingsIcon"
+          alt="Settings"
+          src={isDarkMode ? settingsIconWhite : SettingsIcon}
+          onClick={handleSettingsToggle}
+          style={{
+            width: "75px",
+            height: "75px",
+          }}
+        />
+        <div>
           {Array.from({ length: lives }).map((_, index) => (
-            check ? navigate("/gameover", { state: { score } }) : 
-            <img
-              key={index}
-              src={Heart}
-              alt={`Heart ${index + 1}`}
-              style={{
-                width: "50px",
-                height: "50px",
-              }}
-            />
+            check ? navigate("/gameover", { state: { score } }) :
+              <img
+                key={index}
+                src={Heart}
+                alt={`Heart ${index + 1}`}
+                style={{
+                  width: "50px",
+                  height: "50px",
+                }}
+              />
           ))
           }
-          <h3 style={{ color: isDarkMode ? "#ffffff" : "#000000" }}>Score: {score}</h3>
         </div>
-        <Background darkMode={isDarkMode} />
-        <div id="sheet" style={
-          {
-            position: "relative",
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            top: "100px",
-            height: "200px",
-            width: "100%",
-            color: isDarkMode ? "#ffffff" : "#000000"
-          }
-        } />
-        <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+        <h3 style={{ color: isDarkMode ? "#ffffff" : "#000000" }}>Score: {score}</h3>
       </div>
+      <Background darkMode={isDarkMode} />
+      <div id="sheet" style={
+        {
+          position: "relative",
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          top: "100px",
+          height: "200px",
+          width: "100%",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      } />
+      <div ref={mountRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+      {showSettings && (
+        <Settings
+          onClose={handleSettingsToggle}
+          darkMode={isDarkMode}
+          onDarkModeToggle={() => setIsDarkMode(!isDarkMode)}
+          onVolumeChange={setVolume}
+        />
+      )}
     </>
   );
 };
 
 const style = {
   lifes: {
-    marginLeft: '89%',
-    position: 'absolute'
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    display: "flex",
+    flexDirection: "column",
+    zIndex: 1,
+    alignItems:"center"
   }
 }
-
 export default SightTrainer;
