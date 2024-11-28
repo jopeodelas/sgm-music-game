@@ -5,6 +5,8 @@ import * as Tone from "tone";
 import TWEEN from "@tweenjs/tween.js";
 import Background from "../components/Background";
 import { useNavigate } from "react-router-dom";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 
 const Piano = () => {
   const location = useLocation();
@@ -220,7 +222,7 @@ const Piano = () => {
 
     createPathway();
 
-    // Create the Walls with circular hole
+    // Create the Walls with circular hole and corresponding note label
     const walls = [];
 
     const createWall = (note, height) => {
@@ -254,6 +256,25 @@ const Piano = () => {
       };
       scene.add(wall);
       walls.push(wall);
+
+      // Add note label to the wall
+      const fontLoader = new FontLoader();
+      fontLoader.load("https://threejs.org/examples/fonts/helvetiker_regular.typeface.json", (font) => {
+        const textGeometry = new TextGeometry(note, {
+          font: font,
+          size: 0.45, // Slightly smaller size for better fitting within the wall boundaries
+          height: 0.05,
+        });
+        const textMaterial = new THREE.MeshBasicMaterial({
+          color: isDarkMode ? 0xffffff : 0x000000,
+        });
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+        // Position the text centered on the X-axis, adjust to ensure it's within the wall boundaries
+        textMesh.position.set(0, height < 0 ? 1.2 : -1.2, 0.05); // Ensure it's within the wall boundaries
+        textMesh.rotation.y = 0; // Ensure the text is facing forward
+        wall.add(textMesh);
+      });
     };
 
     const generateWalls = () => {

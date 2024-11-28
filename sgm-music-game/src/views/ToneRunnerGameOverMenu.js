@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Background from "../components/Background";
 import * as THREE from "three";
 import mainAudioFile from "../assets/audio/MIAU.mp3";
+import Settings from "../components/Settings";
 
 const ToneRunnerGameOverMenu = () => {
   const navigate = useNavigate();
@@ -15,8 +16,14 @@ const ToneRunnerGameOverMenu = () => {
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "true" || false
   );
+  const [volume, setVolume] = useState(() => {
+    const savedVolume = parseInt(localStorage.getItem("volume"), 10);
+    return isNaN(savedVolume) ? 20 : savedVolume;
+  });
   const [scene, setScene] = useState(null);
   const [renderer, setRenderer] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const mainAudioRef = useRef(null);
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -58,16 +65,16 @@ const ToneRunnerGameOverMenu = () => {
                 font-family: "Poppins-Semibold";
             }
             .score-text {
-                font-size: 4vh;
+                font-size: 6vh;
                 color: ${isDarkMode ? "white" : "black"};
-                margin-top: 20vh;
+                margin-top: 25vh;
                 position: absolute;
                 z-index: 15;
             }
             .button-container {
                 display: flex;
                 gap: 2vw;
-                margin-top: -35vh;
+                margin-top: -30vh;
                 position: absolute;
                 z-index: 15;
             }
@@ -86,8 +93,8 @@ const ToneRunnerGameOverMenu = () => {
                 transform: scale(1.05);
             }
             .dark .game-over-button {
-                background-color: white;
-                color: black;
+                background-color: black;
+                color: white;
             }`;
     document.head.appendChild(style);
 
@@ -343,14 +350,21 @@ const ToneRunnerGameOverMenu = () => {
     };
 
     // Tocar o áudio e sincronizar as notas
-    const mainAudio = new Audio(mainAudioFile);
+    if (!mainAudioRef.current) {
+      const mainAudio = new Audio(mainAudioFile);
+      mainAudio.volume = volume / 100; // Ajusta o volume com base no valor armazenado
+      mainAudio.loop = true; // Loop para garantir que a música continue
+      mainAudioRef.current = mainAudio;
 
-    mainAudio.addEventListener("canplaythrough", () => {
-      mainAudio.play().catch((error) => {
-        console.error("Erro ao tentar tocar o áudio principal:", error);
-      });
-      playNotesWithTimestamps(noteEvents);
-    });
+      const handleCanPlayThrough = () => {
+        mainAudio.play().catch((error) => {
+          console.error("Erro ao tentar tocar o áudio principal:", error);
+        });
+        playNotesWithTimestamps(noteEvents);
+      };
+
+      mainAudio.addEventListener("canplaythrough", handleCanPlayThrough);
+    }
 
     // Renderiza a animação do piano
     const animate = () => {
@@ -362,12 +376,44 @@ const ToneRunnerGameOverMenu = () => {
     return () => {
       newRenderer.dispose();
       document.head.removeChild(style);
-      if (!mainAudio.paused) {
-        mainAudio.pause();
-        mainAudio.currentTime = 0;
-      }
     };
   }, []);
+
+  useEffect(() => {
+    if (mainAudioRef.current) {
+      mainAudioRef.current.volume = volume === 0 ? 0 : volume / 100; // Atualiza o volume sem parar a música e muta se volume for 0
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      .game-over-title {
+        color: ${isDarkMode ? "white" : "black"};
+      }
+      .score-text {
+        color: ${isDarkMode ? "white" : "black"};
+      }
+      .game-over-button {
+        background-color: ${isDarkMode ? "white" : "black"};
+        color: ${isDarkMode ? "black" : "white"};
+      }`;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, [isDarkMode]);
+
+  const handleNavigation = (path) => {
+    if (mainAudioRef.current) {
+      mainAudioRef.current.pause();
+      mainAudioRef.current.currentTime = 0;
+      mainAudioRef.current.src = "";
+      mainAudioRef.current = null;
+    }
+    navigate(path);
+  };
 
   return (
     <div className="game-over-menu" ref={mountRef}>
@@ -387,14 +433,32 @@ const ToneRunnerGameOverMenu = () => {
       <div className="button-container">
         <button
           className="game-over-button"
-          onClick={() => navigate("/tonerunner")}
+          onClick={() => handleNavigation("/tonerunner")}
         >
           Play Again
         </button>
-        <button className="game-over-button" onClick={() => navigate("/")}>
+        <button
+          className="game-over-button"
+          onClick={() => handleNavigation("/")}
+        >
           Main Menu
         </button>
       </div>
+      <button
+        className="game-over-button"
+        style={{ marginTop: '55vh', position: 'absolute', zIndex: 15 }}
+        onClick={() => setShowSettings(true)}
+      >
+        Settings
+      </button>
+      {showSettings && (
+        <Settings
+          onVolumeChange={(newVolume) => setVolume(newVolume)}
+          onClose={() => setShowSettings(false)}
+          darkMode={isDarkMode}
+          onDarkModeToggle={() => setIsDarkMode((prevMode) => !prevMode)}
+        />
+      )}
     </div>
   );
 };
