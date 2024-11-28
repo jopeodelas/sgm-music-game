@@ -17,7 +17,7 @@ const Homepage = () => {
   const [showVolumeControl, setShowVolumeControl] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isClickable, setIsClickable] = useState(false);
-  
+
   // State to manage the visibility of descriptions
   const [tileDescriptions, setTileDescriptions] = useState({
     1: false,
@@ -256,7 +256,7 @@ const Homepage = () => {
             color: darkMode ? "white" : "black",
           }}
         >
-          <h1 id="gameName">Game Name</h1>
+          <h1 id="gameName">Music Masters</h1>
           <p id="gameSlogan">Choose your game mode, learn and have fun!</p>
           <p id="developedBy">
             Developed by: Bernardo Coelho, Diogo Martins, João Gomes, João
