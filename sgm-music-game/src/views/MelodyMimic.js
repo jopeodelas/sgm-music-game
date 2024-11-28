@@ -391,7 +391,12 @@ const MelodyMimic = () => {
     <div style={{ position: "relative", height: "100vh" }}>
         {/* Ícones */}
         <div style={{ position: "absolute", top: "10px", left: "10px", zIndex: 1,}} onClick={() => navigate("/")}>
-          <img src={isDarkMode ? GobackWhite : GobackBlack} alt="Go Back" style={{ width: "100px", height: "100px" }}/>
+          <img src={isDarkMode ? GobackWhite : GobackBlack} alt="Go Back" style={{
+            width: "75px",
+            height: "75px",
+            marginLeft: "20px",
+            marginTop: "20px",
+          }}/>
         </div> 
         
         <div style={{width:'100%', position: "absolute", textAlign: 'center', display: 'flex', justifyContent: 'center', marginTop:'1%', color: isDarkMode ? "white" : "black"}}>

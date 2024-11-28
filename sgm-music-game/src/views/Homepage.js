@@ -141,13 +141,13 @@ const Homepage = () => {
           >
             <div>
               <ClefIcon className="icon" />
-              <span className="tileText">SightTrainer</span>
+              <span className="tileText">Sight Trainer</span>
             </div>
           </div>
           <div
             className="blackTile"
             id="blackTile-1"
-            data-text="Test your Sight Reading!"
+            data-text="Test your sight reading!"
             style={{ width: tileWidths[1] }}
             ref={tileRefs.current[1]}
             onMouseEnter={() => handleBlackTileHover(1)}
