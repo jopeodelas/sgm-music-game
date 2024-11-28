@@ -114,8 +114,7 @@ const FreeMode = () => {
         release: 2, // O som se desvanecerá ao longo de 2 segundos ao soltar a tecla
       },
     }).toDestination();
-    const volumeSetting = parseInt(localStorage.getItem("volume"), 10) || 50;
-    synth.volume.value = Tone.gainToDb(volumeSetting / 100);
+    synth.volume.value = Tone.gainToDb(volume / 100);
 
     // Criar um MediaStreamDestination e conectar ao sintetizador para capturar áudio
     const audioDestination = Tone.context.createMediaStreamDestination();
@@ -220,7 +219,7 @@ const FreeMode = () => {
         await Tone.start();
       }
 
-      synth.triggerAttack(note, undefined, 0.8); // Volume inicial a 80%
+      synth.triggerAttack(note, undefined, volume / 100); // Aplicar volume dinâmico
       key.material.color.setHex(color);
     };
 
@@ -344,7 +343,7 @@ const FreeMode = () => {
       window.removeEventListener("keyup", handleKeyRelease);
       mountNode.removeChild(renderer.domElement);
     };
-  }, [isDarkMode]);
+  }, [isDarkMode, volume]);
 
   const handleRecordClick = async () => {
     if (isRecording) {
@@ -649,6 +648,7 @@ const FreeMode = () => {
           onClose={handleSettingsToggle}
           darkMode={isDarkMode}
           onDarkModeToggle={() => setIsDarkMode(!isDarkMode)}
+          onVolumeChange={(newVolume) => setVolume(newVolume)}
         />
       )}
     </div>
