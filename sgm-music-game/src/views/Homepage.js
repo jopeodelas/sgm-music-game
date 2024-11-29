@@ -174,7 +174,7 @@ const Homepage = () => {
           <div
             className="blackTile"
             id="blackTile-2"
-            data-text="Mimic the melody that you hear!"
+            data-text="Mimic the melody that you see!"
             style={{ width: tileWidths[2] }}
             ref={tileRefs.current[2]}
             onMouseEnter={() => handleBlackTileHover(2)}
