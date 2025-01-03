@@ -22,6 +22,7 @@ const SightTrainer = () => {
   const [score, setScore] = useState(0);
   const lifes = useRef(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [check, setCheck] = useState(false)
   const [volume, setVolume] = useState(
     parseInt(localStorage.getItem("volume"), 10) || 50
   );
@@ -341,6 +342,31 @@ const SightTrainer = () => {
     };
     animate();
 
+    const checkAnswer = (note) => {
+      if (randomizedNotes.length !== 0) {
+        const notePlayed = noteMap[note]
+        console.log(notePlayed + " " + randomizedNotes[0])
+        if (notePlayed == randomizedNotes[0]) {
+          randomizedNotes.shift();
+          console.log(randomizedNotes)
+          setScore((prev) => prev + 10)
+        }
+        else {
+          setLives((prevLives) => {
+            if (prevLives === 1) {
+              console.log("SCORE: " + score)
+              setCheck((check) => !check)
+              console.log(check)
+              synth.volume.value = Tone.gainToDb(0)
+              return prevLives
+            } else {
+              return prevLives - 1
+            }
+          });
+        }
+        renderNotes()
+      }
+    }
 
     return () => {
       window.removeEventListener("mousedown", onMouseDown);
@@ -371,36 +397,13 @@ const SightTrainer = () => {
     });
   }
 
-  const [check, setCheck] = useState(false)
-  const checkAnswer = (note) => {
-    if (randomizedNotes.length !== 0) {
-      const notePlayed = noteMap[note]
-      console.log(notePlayed + " " + randomizedNotes[0])
-      if (notePlayed == randomizedNotes[0]) {
-        randomizedNotes.shift();
-        console.log(randomizedNotes)
-        setScore((prev) => prev + 10)
-      }
-      else {
-        setLives((prevLives) => {
-          if (prevLives === 1) {
-            console.log("SCORE: " + score)
-            setCheck((check) => !check)
-            console.log(check)
-            return prevLives;
-          } else {
-            return prevLives - 1;
-          }
-        });
-      }
-      renderNotes()
-    }
-  }
-
 
   useEffect(() => {
     for (let i = 0; i < 5; i++) renderNotes();
   }, []);
+
+
+
 
   return (
     <>

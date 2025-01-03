@@ -354,6 +354,7 @@ const MelodyMimic = () => {
                   setLives((prevLives) => {
                     if (prevLives === 1) {
                       console.log("SCORE: "+score)
+                      synth.volume.value = Tone.gainToDb(0)
                       setCheck((check) => !check)
                       console.log(check)
                       return prevLives;
